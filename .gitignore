@@ -99,3 +99,20 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#####################################################
+# dataset 
+/dataset/CubeData/binvox/*
+/dataset/CubeData/img/*
+
+# file for test
+/z_test/*
+/demo/*
+/demo2/*
+/demo_second/*
+/demo2_second/*
+
+# train model file
+/model/*
+/model_epoch/*
+/single_model/*
