@@ -122,7 +122,7 @@ def train():
             loss.backward()
             optimizer.step()
             t2=time.time()
-            print "in batch:{} loss={}".format(batch_idx, loss.data[0],t2-t1)
+            print "in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1)
             #evaluate()
             if batch_idx%100==0:
                 save_checkpoint(epoch, model, optimizer)
