@@ -24,12 +24,18 @@ class AnnotationTransform(object) :
 class singleDataset(data.Dataset):
     def __init__(self,data_root,test=False):
         super(singleDataset, self).__init__()
+        if test:
+            data_root=os.path.join(data_root,'test')
+        else:
+            data_root=os.path.join(data_root,'trainval')
+
         self.img_path=os.path.join(data_root,'img')
         self.target_path=os.path.join(data_root,'binvox')
+
         self.idx=list()
-        txtfile = 'trainval_8.txt'
+        txtfile = 'trainval_csg_s.txt'
         if test :
-            txtfile='test_8.txt'
+            txtfile='test_csg_s.txt'
 
         for line in open(os.path.join(data_root,txtfile)):
             self.idx.append(line.strip())

@@ -15,8 +15,8 @@ with open('trainval_8.txt','wb') as fp:
             fp.write('{}_{}\n'.format(index,camera_index))
 '''
 
-with open('./dataset/CubeData/test2_cube_m.txt','w') as fp:
-    for index in xrange(1700,1730):
+with open('./dataset/CubeData/test_cube_m.txt','w') as fp:
+    for index in xrange(2700):
         ## 2700 of 3000 model to training
         for v1_idx in xrange(8):
             for v2_idx in xrange(13):
