@@ -94,10 +94,10 @@ def train():
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
 
-    if not args.reset_lr:
-        optimizer.load_state_dict(checkoint['optim'])
-    else:
-        print ('reset learning rate')
+        if not args.reset_lr:
+            optimizer.load_state_dict(checkoint['optim'])
+        else:
+            print ('reset learning rate')
 
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
     else:
