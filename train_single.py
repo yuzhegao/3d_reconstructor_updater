@@ -1,3 +1,4 @@
+from __future__ import print_function,division
 import os
 import os.path
 
@@ -6,8 +7,6 @@ import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
 from layer.voxel_func import *
-
-is_GPU=torch.cuda.is_available()
 
 is_GPU=torch.cuda.is_available()
 
@@ -122,7 +121,7 @@ def train():
             loss.backward()
             optimizer.step()
             t2=time.time()
-            print "in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1)
+            print ("in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
             if batch_idx%100==0:
                 save_checkpoint(epoch, model, optimizer)
@@ -130,9 +129,9 @@ def train():
         save_checkpoint(epoch,model, optimizer,is_epoch=True)
         end_epochtime = time.time()
         lr_decay(optimizer,epoch)
-        print '--------------------------------------------------------'
-        print 'in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime)
-        print '--------------------------------------------------------'
+        print ('--------------------------------------------------------')
+        print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
+        print ('--------------------------------------------------------')
 
 train()
 

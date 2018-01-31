@@ -3,6 +3,8 @@ for the transform  from viewpoint1 to abitrary viewpoint
 viewpoint 8-12  orthoganal viewpoint x5
 viewpoint 0-7 perspective viewpoint x8
 '''
+from __future__ import print_function,division
+
 import numpy as np
 import math
 
@@ -22,7 +24,7 @@ def normalize(v):
 
 def Translate(transform, v ):
     if(transform.shape!=(4,4) or v.size!=3):
-        print "Translate shape error!"
+        print ("Translate shape error!")
         return 0
     result=transform
     result[3]=transform[0] * v[0] + transform[1] * v[1] + transform[2] * v[2] + transform[3]
@@ -32,7 +34,7 @@ def Translate(transform, v ):
 def Rotate(transform, v ,angle):
     #this anlgle should change to radian
     if(transform.shape!=(4,4) or v.size!=3):
-        print "Rotate shape error!"
+        print ("Rotate shape error!")
         return 0
     cos = math.cos(Angle2Rad(angle))
     sin = math.sin(Angle2Rad(angle))
@@ -61,7 +63,7 @@ def Rotate(transform, v ,angle):
 
 def Scale(transform, v ):
     if(transform.shape!=(4,4) or v.size!=3):
-        print "Scale shape error!"
+        print ("Scale shape error!")
         return 0
     Result = np.identity(4, dtype=np.float32)
     Result[0] = transform[0] * v[0]
@@ -72,7 +74,7 @@ def Scale(transform, v ):
 
 def LookAt(eye,center,up):
     if(eye.size!=3 or center.size!=3 or up.size!=3):
-        print "LookAt shape error"
+        print ("LookAt shape error")
         return 0
     f=normalize(eye-center)
     s=normalize(np.cross(up,f))
@@ -99,7 +101,7 @@ def LookAt(eye,center,up):
     return Result
 
 def Perspective(fov,ar,zNear,zFar):
-    print ar
+    print (ar)
     Result = np.zeros((4,4), dtype=np.float32)
     tanHalfFovy=math.tan(Angle2Rad(fov/2))
 

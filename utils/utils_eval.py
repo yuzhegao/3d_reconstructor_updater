@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 import torch
 import numpy as np
 
@@ -17,10 +19,10 @@ def singlenet_eval(preds,targets):
 '''
 def singlenet_eval(pred,target):
     ## pred and target -> torch.Tensor
-    print pred.size(),target.size()
+    print (pred.size(),target.size())
     pred,target=pred.numpy().astype(np.float32)>0.5,\
                 target.numpy().astype(np.float32)>0.5
     intersect=np.sum(target[pred])
     union=np.sum(pred) + np.sum(target) - intersect
-    print 'iou={} pred={}'.format(intersect*1.0/union,np.sum(pred))
+    print ('iou={} pred={}'.format(intersect*1.0/union,np.sum(pred)))
     return intersect,intersect*1.0/union

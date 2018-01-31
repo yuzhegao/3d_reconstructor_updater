@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 import os.path
 import argparse
 
@@ -164,7 +166,7 @@ def train():
             optimizer.step()
             t2=time.time()
 
-            print "in batch:{} loss={} time_cost:{} ".format(batch_idx, loss.data[0],t2-t1)
+            print ("in batch:{} loss={} time_cost:{} ".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
             if batch_idx%100==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
@@ -174,8 +176,8 @@ def train():
 
         # do not decay learning rate at the begining
         #lr_decay(optimizer,epoch)
-        print '--------------------------------------------------------'
-        print 'in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime)
-        print '--------------------------------------------------------'
+        print ('--------------------------------------------------------')
+        print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
+        print ('--------------------------------------------------------')
 
 train()

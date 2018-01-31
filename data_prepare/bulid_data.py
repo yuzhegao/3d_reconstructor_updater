@@ -1,14 +1,11 @@
+from __future__ import print_function,division
+
 import os
 import os.path
-import sys
 import torch
 import torch.utils.data as data
-import torchvision.transforms as transforms
-from PIL import Image, ImageDraw, ImageFont
-from torch.autograd import Variable
+
 import cv2
-import numpy as np
-import random
 
 from utils.utils_trans import *
 from utils.utils_rw import *
@@ -63,7 +60,7 @@ class singleDataset(data.Dataset):
         target=m.data.transpose(2,1,0)
         img = cv2.imread(os.path.join(self.img_path , img_id+'.jpg'),0)
         if img is None:
-            print img_id
+            print (img_id)
 
         return torch.from_numpy(img).type(torch.FloatTensor),target
 
@@ -117,7 +114,7 @@ class multiDataset(data.Dataset):
 
         for line in open(os.path.join(data_root, txtfile)):
             self.idx.append(line.strip())
-        print len(self.idx)
+        print (len(self.idx))
 
 
     def __getitem__(self, index):
@@ -137,7 +134,7 @@ class multiDataset(data.Dataset):
         img:[1x256x256]  binvox:[64x64x64]
         v12: ByteTensor of size1x2 e.g:[3,5]
         """
-        print index
+        #print (index)
         _,model_idx,v1_idx,v2_idx = self.idx[index].split('_')
 
         img1_id = '{}_{}'.format(model_idx, v1_idx)

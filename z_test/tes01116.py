@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 """
 test if the transform in torch(GPU) is correct
 """
@@ -20,21 +22,21 @@ from utils.torch_trans import sparse2dense,dense2sparse
 
 ################################################
 print ('\n \n')
-print 'trans6_9'
-print inv_transform_list[6]
+print ('trans6_9')
+print (inv_transform_list[6])
 
 with open('10_6.binvox', 'rb') as f:
     # m1 = read_as_coord_array(f)
     m1 = read_as_orginal_coord(f)
-    print 'before transform ',m1.data
-    print m1.data.shape
+    print ('before transform ',m1.data)
+    print (m1.data.shape)
 
     #transform = trans6_9()
     transform = inv_transform_list[6]
     trans_coord = transform.dot(m1.data)
-    print 'after transform'
-    print trans_coord
-    print trans_coord.shape
+    print ('after transform')
+    print (trans_coord)
+    print (trans_coord.shape)
 
 trasform_voxel = orgin_sparse_to_dense(trans_coord, 64)
 #print trasform_voxel

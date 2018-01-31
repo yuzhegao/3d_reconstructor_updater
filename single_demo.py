@@ -1,4 +1,5 @@
-import os
+from __future__ import print_function,division
+
 import os.path
 
 import time
@@ -23,7 +24,7 @@ def eval_model(model_name):
         m2 = read_as_3d_array(f1)
 
     # print m1.data,m2.data
-    print IOU(m1.data, m2.data)
+    print ('iou:',IOU(m1.data, m2.data))
 
 
 
@@ -42,7 +43,7 @@ if os.path.exists(resume):
     else:
         model.load_state_dict(torch.load(resume,map_location=lambda storage, loc: storage)['model'])
 
-    print 'load trained model success'
+    print ('load trained model success')
 
 data_rootpath='./dataset/CsgData'
 dataset=singleDataset(data_rootpath)
@@ -52,7 +53,7 @@ for i in xrange(210,213):
     # test_img = np.array(test_img).astype(np.float32)
     # cv2.imshow('mat',test_img)
     # cv2.waitKey(1000)
-    print img_id
+    print (img_id)
 
     test_img = test_img[np.newaxis, :]
     test_img = test_img[np.newaxis, :]
@@ -65,8 +66,8 @@ for i in xrange(210,213):
     end = time.time()
 
     result = up.data[0, :, :, :].numpy()
-    print result
-    print "each forward use:{}s".format(end - init)
+    print (result)
+    print ("each forward use:{}s".format(end - init))
     result = result >= 0.5
 
     with open('0_0.binvox', 'rb') as f:

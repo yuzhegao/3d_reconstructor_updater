@@ -1,10 +1,11 @@
+from __future__ import print_function,division
+
 import os
 import os.path
 import argparse
 
 import time
 from data_prepare.bulid_data import multiDataset,multi_collate
-from data_prepare.multi_loader import multiDataLoader
 from layer.voxel_net2 import MulitUpdateNet
 from layer.voxel_func import *
 from utils.utils_rw import *
@@ -133,7 +134,7 @@ def evaluate():
             total_correct += insect
 
     #print 'correct num:{}'.format(total_correct)
-    print 'the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset)))
-    print 'the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset)))
+    print ('the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset))))
+    print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
 
 evaluate()

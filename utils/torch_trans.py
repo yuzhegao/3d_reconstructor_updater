@@ -1,3 +1,5 @@
+
+
 """
 test if the transform in torch(GPU) is correct
 """
@@ -13,8 +15,7 @@ import cv2
 import numpy as np
 import random
 
-from data_prepare.multi_loader import multiDataLoader
-from data_prepare.bulid_data import multiDataset,singleDataset
+from data_prepare.bulid_data import multiDataset
 
 from utils.utils_trans import *
 from utils.utils_rw import *

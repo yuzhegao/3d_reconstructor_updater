@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 import os
 import os.path
 import sys
@@ -46,4 +48,4 @@ with open('test.binvox','wb') as f1:
 
 '''
 a=torch.randn(2,64,64,64)
-print a.transpose(3,1)
+print (a.transpose(3,1))

@@ -1,9 +1,10 @@
 """
 use model.predict function to predict 3D model (with 2~3 iterate)
 """
-
+from __future__ import print_function,division
 import os.path
 import time
+
 import random
 
 from utils.utils_rw import *
@@ -33,8 +34,8 @@ def eval_model(model_name,demo_path):
         m2 = read_as_3d_array(f1)
 
     # print m1.data,m2.data
-    print "IOU={:.3f}".format(IOU(m1.data, m2.data))
-    print ' '
+    print ("IOU={:.3f}".format(IOU(m1.data, m2.data)))
+    print (' ')
 
 #np.set_printoptions(threshold='nan')
 resume='./model/latest_model_multi_2nd.pth'
@@ -48,7 +49,7 @@ if os.path.exists(resume):
         model.load_state_dict(torch.load(resume)['model'])
     else:
         model.load_state_dict(torch.load(resume,map_location=lambda storage, loc: storage)['model'])
-    print  'load trained model success'
+    print  ('load trained model success')
 
 data_rootpath='./dataset/CubeData'
 dataset=multiDataset(data_rootpath)
@@ -67,7 +68,7 @@ def generate_binvox(num1,num2,demo_path='./demo2/'):
 
         img1_id, test_img1 = dataset.pull_img(i, v1)
         img2_id, test_img2 = dataset.pull_img(i, v2)
-        print img1_id, img2_id
+        print (img1_id, img2_id)
 
         test_img1 = test_img1[np.newaxis, :][np.newaxis, :]
         test_img2 = test_img2[np.newaxis, :][np.newaxis, :]

@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 import os
 import os.path
 import sys
@@ -16,8 +18,8 @@ torch.set_printoptions(threshold='nan')
 
 dims=64
 dims=[dims] * 3
-print dims
+print (dims)
 dims = np.atleast_2d(dims).T
-print dims
+print (dims)
 dense_data = np.zeros(dims.flatten(), dtype=np.float32)
-print dense_data.shape
+print (dense_data.shape)

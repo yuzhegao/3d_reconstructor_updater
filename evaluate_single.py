@@ -1,3 +1,5 @@
+from __future__ import print_function,division
+
 import os
 import os.path
 
@@ -100,10 +102,10 @@ def evaluate():
             total_correct += insect
 
         t2=time.time()
-        print 'in batch{} cost{}s'.format(batch_idx,t2-t1)
+        print ('in batch{} cost{}s'.format(batch_idx,t2-t1))
 
     #print 'correct num:{}'.format(total_correct)
-    print 'the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset)))
-    print 'the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset)))
+    print ('the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset))))
+    print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
 
 evaluate()
