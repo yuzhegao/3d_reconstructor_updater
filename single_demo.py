@@ -28,7 +28,7 @@ def eval_model(model_name):
 
 
 np.set_printoptions(threshold='nan')
-resume='./model_epoch/latest_model.pth'
+resume='./model_epoch/csg_single_model.pth'
 
 model=singleNet()
 
@@ -47,7 +47,7 @@ if os.path.exists(resume):
 data_rootpath='./dataset/CsgData'
 dataset=singleDataset(data_rootpath)
 
-for i in xrange(210,220):
+for i in xrange(210,213):
     img_id, test_img = dataset.pull_img(i)
     # test_img = np.array(test_img).astype(np.float32)
     # cv2.imshow('mat',test_img)
@@ -76,7 +76,7 @@ for i in xrange(210,220):
     m1.data = result.transpose(2,1,0)
     with open('./demo/'+img_id+'.binvox', 'wb')as f1:
         write(m1, f1)
-    #eval_model(img_id)
+    eval_model(img_id)
 
 
 
