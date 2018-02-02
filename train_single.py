@@ -123,7 +123,7 @@ def train():
             t2=time.time()
             print ("in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
-            if batch_idx%100==0:
+            if batch_idx%100==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
                 log('csg_SingleTrain_log.txt', epoch, batch_idx, loss.data[0])
         save_checkpoint(epoch,model, optimizer,is_epoch=True)
