@@ -89,7 +89,7 @@ def train():
     num_epochs = args.epochs
 
     if os.path.isfile(resume):
-        checkoint = torch.load(resume)
+        checkoint = torch.load(resume,map_location={'cuda:0':'cuda:3'})
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
 
