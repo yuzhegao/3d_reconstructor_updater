@@ -116,8 +116,7 @@ def train():
         model.load = model.load_state_dict(checkoint['model'])
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
 
-        if not args.reset_lr:
-            optimizer.load_state_dict(checkoint['optim'])
+
     else:
         print("no resume checkpoint to load")
     if args.reset_lr:
