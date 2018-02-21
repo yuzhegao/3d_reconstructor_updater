@@ -153,7 +153,8 @@ class MulitUpdateNet(nn.Module):
       """
       if is_GPU:
           sparse_data = sparse_data.cuda()"""
-      sparse_data = sparse_data.numpy()
+      sparse_data = sparse_data.numpy()  ## notice here! we use .numpy() to get numpy array(cpu)
+
 
       sparse_list.append(sparse_data)
     return sparse_list
