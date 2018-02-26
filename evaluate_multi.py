@@ -18,14 +18,14 @@ parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
 parser.add_argument('--iter', default=3, type=int, metavar='N',
                     help='number of iter in  once forward')
-parser.add_argument('--start-epoch', default=1, type=int, metavar='N',
-                    help='manual epoch number (useful on restarts)')
+
 parser.add_argument('-bs',  '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 16)')
 
-
-parser.add_argument('--resume', default='./model/latest_model_multi.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: ./model/latest_model_multi.pth)')
+parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
+                    help='name of dataset (default: csg)')
+parser.add_argument('--resume', default='latest_model_multi.pth', type=str, metavar='PATH',
+                    help='file name of latest checkpoint (default: latest_model_multi.pth)')
 parser.add_argument('--single-model', default='./single_model/latest_model.pth', type=str, metavar='PATH',
                     help='path to single model (default: ./single_model/latest_model.pth)')
 
@@ -57,21 +57,23 @@ if is_GPU:
     torch.cuda.set_device(args.gpu)
 
 data_rootpath=args.data
-resume=args.resume
+resume='./model/'+args.resume
 
 singlemodel_path=args.single_model
 
-model=MulitUpdateNet(singlemodel_path)
+model=MulitUpdateNet()
 if is_GPU:
     model.cuda()
 
 def evaluate():
     ## calculate the average IOU between pred and gt
     if os.path.exists(resume):
-        checkoint = torch.load(resume)
+        if is_GPU:
+            checkoint = torch.load(resume)
+        else:
+            checkoint = torch.load(resume,map_location=lambda storage, loc: storage)
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
-        #optimizer.load_state_dict(checkoint['optim'])
         print ('load the resume checkpoint from epoch{}'.format(start_epoch))
     else:
         print("no resume checkpoint to load")
@@ -80,7 +82,7 @@ def evaluate():
     IOUs=0
     total_correct=0
 
-    data_eval = multiDataset(data_rootpath, test=True)
+    data_eval = multiDataset(data_rootpath,data_name=args.data_name, test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval, batch_size=args.batch_size,
                                   shuffle=True, collate_fn=multi_collate)
 
@@ -113,6 +115,8 @@ def evaluate():
 
         t1 = time.time()
         # print v12s
+
+        ## here we find that the output without iterate is better than with iterate
         #outputs = model.predict(img1s, img2s, v12s,iter=args.iter)
         outputs = model(img1s, img2s, v12s)
         t2 = time.time()

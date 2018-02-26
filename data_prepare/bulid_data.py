@@ -107,7 +107,7 @@ class multiDataset(data.Dataset):
         self.idx=list()
         txtfile = 'trainval_'+data_name+'_m.txt'
         if test:
-            txtfile = 'test2_'+data_name+'_m.txt'
+            txtfile = 'test_'+data_name+'_m.txt'
         print (txtfile)
 
         for line in open(os.path.join(data_root, txtfile)):
