@@ -103,8 +103,8 @@ ENV/
 
 #####################################################
 # dataset
-binvox/*
-img/*
+#binvox/*
+#img/*
 
 # file for test
 /z_test/*
