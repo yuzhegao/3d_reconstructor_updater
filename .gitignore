@@ -103,8 +103,10 @@ ENV/
 
 #####################################################
 # dataset
-binvox/*
-img/*
+/dataset/CubeData/binvox/*
+/dataset/CubeData/img/*
+/dataset/CsgData/binovox/*
+/dataset/CsgData/img/*
 *.binvox
 *.jpg
 
