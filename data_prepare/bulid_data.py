@@ -19,17 +19,18 @@ class AnnotationTransform(object) :
 '''
 ## dataset class for single-view CNN training
 class singleDataset(data.Dataset):
-    def __init__(self,data_root,test=False):
+    def __init__(self,data_root,data_name,test=False):
         super(singleDataset, self).__init__()
 
         self.img_path=os.path.join(data_root,'img')
         self.target_path=os.path.join(data_root,'binvox')
 
         self.idx=list()
-        txtfile = 'trainval_csg2_s.txt'
+        txtfile = 'trainval_'+data_name+'_s.txt'
         if test :
-            txtfile='test_csg2_s.txt'
+            txtfile='test_'+data_name+'_s.txt'
 
+        print (txtfile)
         for line in open(os.path.join(data_root,txtfile)):
             self.idx.append(line.strip())
 
@@ -98,15 +99,16 @@ def single_collate(batch):
 
 ## dataset for multi-view CNN training
 class multiDataset(data.Dataset):
-    def __init__(self, data_root,test=False):
+    def __init__(self, data_root,data_name,test=False,):
         super(multiDataset, self).__init__()
         self.img_path = os.path.join(data_root, 'img')
         self.target_path = os.path.join(data_root, 'binvox')
 
         self.idx=list()
-        txtfile = 'trainval_cube_m.txt'
+        txtfile = 'trainval_'+data_name+'_m.txt'
         if test:
-            txtfile = 'test2_cube_m.txt'
+            txtfile = 'test2_'+data_name+'_m.txt'
+        print (txtfile)
 
         for line in open(os.path.join(data_root, txtfile)):
             self.idx.append(line.strip())

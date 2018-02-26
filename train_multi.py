@@ -14,6 +14,10 @@ parser = argparse.ArgumentParser(description='Multi-view updater CNN Training')
 parser.add_argument('--data', metavar='DIR',default='./dataset/CubeData',
                     help='path to dataset')
 
+parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
+                    help='name of dataset (default: csg)')
+## this arg: name of log, data list file(.txt)
+
 parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
@@ -25,30 +29,32 @@ parser.add_argument('-bs',  '--batch-size', default=1, type=int,
 parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
                     metavar='LR', help='initial learning rate')
 
-parser.add_argument('--resume', default='./model/latest_model_multi.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: ./model/latest_model_multi.pth)')
+parser.add_argument('--resume', default='latest_model_multi.pth', type=str, metavar='PATH',
+                    help='path to latest checkpoint (default: latest_model_multi.pth)')
 parser.add_argument('--single-model', default='./single_model/t_latest_model.pth', type=str, metavar='PATH',
                     help='path to single model (default: ./single_model/t_latest_model.pth)')
-parser.add_argument('--reset-lr', action="store_true",default=False,
-                    help='whether to reset the learning rate')
 
 
 
 args=parser.parse_args()
 
 data_rootpath=args.data
-resume=args.resume
+resume='./model/'+args.resume
+## args.resume: just the name of checkpoint file
+
+logfile=args.data_name+'_multi_train.txt'
+print ('logfile name:{}'.format(logfile))
 
 singlemodel_path=args.single_model
 
 if is_GPU:
     torch.cuda.set_device(args.gpu)
 
-dataset=multiDataset(data_rootpath,)
+dataset=multiDataset(data_rootpath,data_name=args.data_name)
 data_loader =torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
                                           shuffle=True, collate_fn=multi_collate)
 
-model=MulitUpdateNet(SingleModel=singlemodel_path)
+model=MulitUpdateNet()
 if is_GPU:
     model=model.cuda()
 
@@ -81,26 +87,19 @@ def save_checkpoint(epoch,model,optimizer,is_epoch=False):
         'model':model.state_dict(),
         'optim':optimizer.state_dict(),
         'epoch':epoch,
-    },'./model/latest_model_multi.pth')
+    },'./model/'+args.resume)
     if is_epoch:
         torch.save({
             'model': model.state_dict(),
             'optim': optimizer.state_dict(),
             'epoch': epoch,
-        }, './model_epoch/latest_model_multi.pth')
+        }, './model_epoch/'+args.resume)
 
 def log(epoch,batch,loss):
-    f1=open('log_MultiTraining.txt','a')
-    f1.write('\n in epoch{} batch{} loss={}'.format(epoch,batch,loss))
-
-def lr_decay(optimizer,epoch,step_epoch=20,decay_rate=0.1):
-    if epoch % step_epoch == 0 and epoch!=0:
-        for param in optimizer.param_groups:
-            param['lr'] *= decay_rate
-            f1 = open('log_multi.txt', 'a')
-            f1.write('\n in epoch{} learning_rate={}'.format(epoch, param['lr']))
-        print ("In epoch:{} learning rate decay".format(epoch))
-
+    f1=open(logfile,'a')
+    if epoch==0 and batch==100:
+        f1.write("\nstart training in {}".format(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))))
+    f1.write('\nin epoch{} batch{} loss={}'.format(epoch,batch,loss))
 
 
 def train():
@@ -119,8 +118,7 @@ def train():
 
     else:
         print("no resume checkpoint to load")
-    if args.reset_lr:
-        print ('reset learning rate')
+
 
     # model.SingleNet
     if os.path.exists(singlemodel_path):
@@ -135,6 +133,9 @@ def train():
         model.SingleNet.load = model.SingleNet.load_state_dict(checkoint['model'])
         t2 = time.time()
         print ('singleNetwork load resume model from epoch{} use {}s'.format(checkoint['epoch'], t2 - t1))
+    else:
+        print ('Warning: single model do not exist!')
+
     if is_GPU:
         model.SingleNet=model.SingleNet.cuda()
 

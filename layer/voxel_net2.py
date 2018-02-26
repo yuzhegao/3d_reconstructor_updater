@@ -79,14 +79,13 @@ class singleNet(nn.Module):
 
 
 class MulitUpdateNet(nn.Module):
-  def __init__(self,SingleModel='./single_model/t_latest_model.pth', useBN=True,use_GPU=True):
+  def __init__(self, useBN=True,use_GPU=True):
     super(MulitUpdateNet, self).__init__()
 
     self.GPU = use_GPU and torch.cuda.is_available()
     print ('use GPU or not:{}'.format(self.GPU))
 
     self.SingleNet=singleNet()
-    self.singlePath=SingleModel
 
     if self.GPU:
       self.SingleNet=self.SingleNet.cuda()

@@ -25,24 +25,28 @@ parser.add_argument('-bs',  '--batch-size', default=1, type=int,
 parser.add_argument('--lr', '--learning-rate', default=0.002, type=float,
                     metavar='LR', help='initial learning rate')
 
-parser.add_argument('--resume', default='./model/csg_single_model.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: ./model/csg_single_model.pth)')
+parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
+                    help='name of dataset (default: csg)')
+## this arg: name of log, data list file(.txt)
 
-parser.add_argument('--reset-lr', action="store_true",default=False,
-                    help='whether to reset the learning rate')
-
-
+parser.add_argument('--resume', default='csg_single_model.pth', type=str, metavar='PATH',
+                    help='path to latest checkpoint (default: csg_single_model.pth)')
 
 args=parser.parse_args()
 
+
+
 data_rootpath=args.data
-resume=args.resume
+resume='./model/'+args.resume
+## args.resume: just the name of checkpoint file
+
+logfile=args.data_name+'_single_train.txt'
+print ('logfile name:{}'.format(logfile))
 
 if is_GPU:
     torch.cuda.set_device(args.gpu)
 
-
-dataset=singleDataset(data_rootpath)
+dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
 model=singleNet()
@@ -59,28 +63,22 @@ def save_checkpoint(epoch,model,optimizer,is_epoch=False):
         'model':model.state_dict(),
         'optim':optimizer.state_dict(),
         'epoch':epoch,
-    },'./model/csg_single_model.pth')
+    },'./model/'+args.resume)
     if is_epoch:
         torch.save({
             'model': model.state_dict(),
             'optim': optimizer.state_dict(),
             'epoch': epoch,
-        }, './model_epoch/csg_single_model.pth')
+        }, './model_epoch/'+args.resume)
     #        print ("save model of epoch{}".format(epoch))
 
 
 def log(filename,epoch,batch,loss):
     f1=open(filename,'a')
-    f1.write('\n in epoch{} batch{} loss={}'.format(epoch,batch,loss))
+    if epoch == 0 and batch == 100:
+        f1.write("\nstart training in {}".format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
 
-def lr_decay(optimizer,epoch,step_epoch=20,decay_rate=0.1):
-    if epoch % step_epoch == 0:
-        for param in optimizer.param_groups:
-            param['lr'] *= decay_rate
-            f1 = open('log.txt', 'a')
-            f1.write('\n in epoch{} learning_rate={}'.format(epoch, param['lr']))
-        print ("In epoch:{} learning rate decay".format(epoch))
-
+    f1.write('\nin epoch{} batch{} loss={}'.format(epoch,batch,loss))
 
 
 def train():
@@ -92,11 +90,6 @@ def train():
         checkoint = torch.load(resume,map_location={'cuda:0':'cuda:3'})
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
-
-        if not args.reset_lr:
-            optimizer.load_state_dict(checkoint['optim'])
-        else:
-            print ('reset learning rate')
 
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
     else:
@@ -125,10 +118,9 @@ def train():
             #evaluate()
             if batch_idx%100==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
-                log('csg_SingleTrain_log.txt', epoch, batch_idx, loss.data[0])
+                log(logfile, epoch, batch_idx, loss.data[0])
         save_checkpoint(epoch,model, optimizer,is_epoch=True)
         end_epochtime = time.time()
-        lr_decay(optimizer,epoch)
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
