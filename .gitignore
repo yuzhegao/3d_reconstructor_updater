@@ -103,9 +103,8 @@ ENV/
 
 #####################################################
 # dataset
-/dataset/* 
-/dataset/CubeData/binvox/*
-/dataset/CubeData/img/*
+binvox/*
+img/*
 
 # file for test
 /z_test/*
@@ -118,3 +117,4 @@ ENV/
 /model/*
 /model_epoch/*
 /single_model/*
+/*.txt
