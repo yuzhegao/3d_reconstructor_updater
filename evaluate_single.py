@@ -45,8 +45,8 @@ def IOU(model1,model2):
 
 def eval_iou(pred,target):
     #print pred.size(),target.size()
-    pred,target=pred.numpy().astype(np.float32)>0.5,\
-                target.numpy().astype(np.float32)>0.5
+    pred,target=pred.cpu().numpy().astype(np.float32)>0.5,\
+                target.cpu().numpy().astype(np.float32)>0.5
     intersect=np.sum(target[pred])
     union=np.sum(pred) + np.sum(target) - intersect
 
