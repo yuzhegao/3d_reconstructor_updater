@@ -61,6 +61,7 @@ if is_GPU:
 def evaluate():
     ## calculate the average IOU between pred and gt
     if os.path.isfile(resume):
+        print ('load the checkpoint file {}'.format(resume))
         if is_GPU:
             checkoint = torch.load(resume)
         else:
@@ -73,13 +74,14 @@ def evaluate():
     else:
         print("no resume checkpoint to load")
 
-    model.eval()
+    #model.eval()
     IOUs=0
     total_correct=0
 
     data_eval = singleDataset(data_rootpath,data_name=args.data_name,test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval,
                     batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
+    print ("dataset size:",len(eval_loader.dataset))
 
     for batch_idx,(imgs, targets) in enumerate(eval_loader):
         if is_GPU:
@@ -110,6 +112,7 @@ def evaluate():
             IOUs+=iou
             '''
             insect,iou=eval_iou(occupy[idx],target.data)
+            print ('iou:',iou)
             IOUs += iou
 
             total_correct += insect
@@ -122,3 +125,5 @@ def evaluate():
     print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
 
 evaluate()
+
+## I don't know why,but the evaluate.py iou is low(0.4),and the demo.py iou is high(0.8)
