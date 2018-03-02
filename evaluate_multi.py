@@ -78,13 +78,14 @@ def evaluate():
     else:
         print("no resume checkpoint to load")
 
-    model.eval()
+    #model.eval()
     IOUs=0
     total_correct=0
 
     data_eval = multiDataset(data_rootpath,data_name=args.data_name, test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval, batch_size=args.batch_size,
                                   shuffle=True, collate_fn=multi_collate)
+    print("dataset size:", len(eval_loader.dataset))
 
     # model.SingleNet
     if os.path.exists(singlemodel_path):
@@ -133,6 +134,7 @@ def evaluate():
             insect=(target.data[occupy[idx]]).sum()
             union=target.data.sum()+occupy[idx].sum()-insect
             iou=insect*1.0/union
+            print('iou:', iou)
             IOUs+=iou
 
             total_correct += insect
