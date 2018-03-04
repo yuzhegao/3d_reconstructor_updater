@@ -10,6 +10,7 @@ from layer.voxel_deepernet import singleNet_deeper
 from layer.voxel_func import *
 
 is_GPU=torch.cuda.is_available()
+#torch.set_printoptions(threshold=float('Inf'))
 
 parser = argparse.ArgumentParser(description='Single-view reconstruct CNN Training')
 parser.add_argument('--data', metavar='DIR',default='./dataset/CsgData',
@@ -22,8 +23,8 @@ parser.add_argument('--epochs', default=200, type=int, metavar='N',
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('-bs',  '--batch-size', default=1, type=int,
-                    metavar='N', help='mini-batch size (default: 1)')
-parser.add_argument('--lr', '--learning-rate', default=0.002, type=float,
+                    metavar='N', help='mini-batch size (default: 2)')
+parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
                     metavar='LR', help='initial learning rate')
 
 parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
@@ -54,8 +55,9 @@ model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 
-#critenrion=VoxelLoss()
-critenrion=VoxelL1()
+#critenrion=VoxelL1()
+critenrion=CrossEntropy_loss()
+
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 ## init lr=0.002
 
@@ -113,7 +115,7 @@ def train():
             outputs = model(imgs)
             #print (outputs.data.size())
 
-            loss = critenrion(outputs, targets)
+            loss = critenrion(outputs, targets,gamma=0.7)
 
             optimizer.zero_grad()
             loss.backward()

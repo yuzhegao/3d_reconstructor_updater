@@ -76,7 +76,7 @@ dataset=singleDataset(data_rootpath,data_name=args.data_name,test=True)
 
 ## very strange:  for i in xrange(10010,10013): use cube_single_train.pth trained in server,get a very high iou(0.8)
 ## but in evaluate_single, the iou is low(0.4)
-for i in xrange(210,213):
+for i in xrange(246,249):
     img_id, test_img = dataset.pull_img(i)
     # test_img = np.array(test_img).astype(np.float32)
     # cv2.imshow('mat',test_img)
