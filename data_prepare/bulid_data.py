@@ -95,7 +95,8 @@ def single_collate(batch):
     for sample in batch:
         imgs.append((sample[0])[np.newaxis, :])
         targets.append(torch.FloatTensor( (sample[1].astype(np.float32)) ))
-    return torch.stack(imgs, 0), targets
+
+    return torch.stack(imgs, 0), torch.stack(targets,0)
 
 ## dataset for multi-view CNN training
 class multiDataset(data.Dataset):

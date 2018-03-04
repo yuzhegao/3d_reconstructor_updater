@@ -6,6 +6,7 @@ import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
+from layer.voxel_deepernet import singleNet_deeper
 from layer.voxel_func import *
 
 is_GPU=torch.cuda.is_available()
@@ -49,11 +50,12 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-model=singleNet()
+model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 
-critenrion=VoxelLoss()
+#critenrion=VoxelLoss()
+critenrion=VoxelL1()
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 ## init lr=0.002
 
@@ -100,13 +102,16 @@ def train():
         for batch_idx, (imgs, targets) in enumerate(data_loader):
             if is_GPU:
                 imgs = Variable(imgs.cuda())
-                targets = [Variable(anno.cuda(), requires_grad=False) for anno in targets]
+                #targets = [Variable(anno.cuda(), requires_grad=False) for anno in targets]
+                targets=Variable(targets.cuda())
             else:
                 imgs = Variable(imgs)
-                targets = [Variable(anno, requires_grad=False) for anno in targets]
+                #targets = [Variable(anno, requires_grad=False) for anno in targets]
+                targets=Variable(targets)
 
             t1=time.time()
             outputs = model(imgs)
+            #print (outputs.data.size())
 
             loss = critenrion(outputs, targets)
 
