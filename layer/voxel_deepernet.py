@@ -4,13 +4,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+import torch.nn.init as init
 
-import os
-import time
-import numpy
-from utils.utils_trans import *
-from utils.utils_eval import singlenet_eval
 #from voxel_net2 import add_conv_stage
+
+
+def weights_init(m):
+  classname = m.__class__.__name__
+  if classname.find('Conv') != -1:
+    #print(classname)
+    init.xavier_uniform(m.weight.data)
+    #init.xavier_uniform(m.bias.data)
 
 def add_conv_stage(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=True, useBN=False):
   if useBN:
@@ -53,7 +57,7 @@ class singleNet_deeper(nn.Module):
     self.upsample54 = upsample(512, 256)
     self.upsample43 = upsample(256, 128)
     self.upsample32 = upsample(128,  64)
-    self.conv_last = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, bias=False)
+    #self.conv_last = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, bias=False)
 
     ## weight initialization
     for m in self.modules():

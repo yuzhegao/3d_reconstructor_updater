@@ -1,12 +1,13 @@
 from __future__ import print_function,division
 import os
 import os.path
+import torch
 
 import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
-from layer.voxel_deepernet import singleNet_deeper
+from layer.voxel_deepernet import singleNet_deeper,weights_init
 from layer.voxel_func import *
 
 is_GPU=torch.cuda.is_available()
@@ -35,7 +36,6 @@ parser.add_argument('--resume', default='csg_single_model.pth', type=str, metava
                     help='path to latest checkpoint (default: csg_single_model.pth)')
 
 args=parser.parse_args()
-
 
 
 data_rootpath=args.data
@@ -87,6 +87,9 @@ def log(filename,epoch,batch,loss):
 
 def train():
     model.train()
+    model.apply(weights_init)
+    #weights_init(model)
+
     start_epoch = args.start_epoch
     num_epochs = args.epochs
 
@@ -115,7 +118,7 @@ def train():
             outputs = model(imgs)
             #print (outputs.data.size())
 
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets,gamma=0.5)
 
             optimizer.zero_grad()
             loss.backward()
