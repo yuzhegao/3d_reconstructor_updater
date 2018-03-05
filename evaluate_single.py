@@ -7,6 +7,7 @@ import argparse
 import time
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
+from layer.voxel_deepernet import singleNet_deeper
 from layer.voxel_func import *
 from utils.utils_rw import *
 
@@ -49,12 +50,14 @@ def eval_iou(pred,target):
                 target.cpu().numpy().astype(np.float32)>0.5
     intersect=np.sum(target[pred])
     union=np.sum(pred) + np.sum(target) - intersect
+    print ("output occupy sum:{}".format(np.sum(pred)))
 
     return intersect,intersect*1.0/union
 
 
 
-model=singleNet()
+#model=singleNet()
+model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 

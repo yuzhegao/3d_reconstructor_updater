@@ -6,6 +6,7 @@ import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
+from layer.voxel_deepernet import singleNet_deeper
 from layer.voxel_func import *
 from utils.utils_rw import *
 from utils.utils_trans import inv_transform_list
@@ -52,7 +53,7 @@ def eval_model(model_name):
 np.set_printoptions(threshold='nan')
 resume='./model/'+args.resume
 
-model=singleNet()
+model=singleNet_deeper()
 ##model.eval()  this is the problem!!!
 
 is_GPU=torch.cuda.is_available()
@@ -94,7 +95,7 @@ for i in xrange(246,249):
     end = time.time()
 
     result = up.data[0, :, :, :].numpy()
-    #print (result)
+    print (result)
     #print ("each forward use:{}s".format(end - init))
     result = (result >= 0.5)
 

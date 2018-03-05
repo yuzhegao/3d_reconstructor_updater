@@ -59,7 +59,7 @@ class CrossEntropy_loss(nn.Module):
     def __init__(self):
         super(CrossEntropy_loss,self).__init__()
 
-    def forward(self,outputs,targets,gamma=0.97):
+    def forward(self,outputs,targets,gamma=0.5):
         loss=torch.zeros(1)
         if torch.cuda.is_available():
             loss=Variable(loss.cuda())
@@ -68,7 +68,8 @@ class CrossEntropy_loss(nn.Module):
 
         #targets=targets*3-1.0  ## clamp targets value to {-1,2}
         #print (targets)
-        loss=torch.sum(-gamma*targets*torch.log(outputs)-(1-gamma)*(1-targets)*torch.log(outputs))
+        #print (torch.sum(-gamma*targets*torch.log(outputs)))
+        loss=torch.sum(-gamma*targets*torch.log(outputs)-(1-gamma)*(1-targets)*torch.log(1-outputs))
         return loss/len(targets)
 
 
