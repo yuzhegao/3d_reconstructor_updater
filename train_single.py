@@ -119,7 +119,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets,gamma=0.5)
 
             optimizer.zero_grad()
             loss.backward()
