@@ -55,8 +55,8 @@ model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 
-#critenrion=VoxelL1()
-critenrion=CrossEntropy_loss()
+critenrion=VoxelL1()
+#critenrion=CrossEntropy_loss()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 ## init lr=0.002
@@ -119,7 +119,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=0.5)
+            loss = critenrion(outputs, targets)
 
             optimizer.zero_grad()
             loss.backward()
