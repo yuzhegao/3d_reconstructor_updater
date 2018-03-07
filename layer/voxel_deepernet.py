@@ -84,7 +84,8 @@ class singleNet_deeper(nn.Module):
 
     #outputs=F.sigmoid(self.conv_last(conv2m_out))
     ## find if the last layer is conv,the loss drop rapidly and get all-zero result
-    outputs = torch.clamp(F.sigmoid(self.max_pool(conv2m_out)),min=0.1,max=1.0)
+    #outputs = torch.clamp(F.sigmoid(self.max_pool(conv2m_out)),min=0.1,max=1.0)
+    outputs = F.sigmoid(self.max_pool(conv2m_out))
     return outputs
 
 

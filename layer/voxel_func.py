@@ -70,7 +70,7 @@ class CrossEntropy_loss(nn.Module):
         #print (targets)
         #print (torch.sum(-gamma*targets*torch.log(outputs)))
         #loss=torch.sum(-gamma*targets*torch.log(outputs)-(1-gamma)*(1-targets)*torch.log(1-outputs))
-        loss=-1.0*torch.sum(-gamma*targets*torch.log(outputs+10**-9))\
+        loss=-1.0*torch.sum(gamma*targets*torch.log(outputs+10**-9))\
              -1.0*torch.sum((1-gamma)*(1-targets)*torch.log(1-outputs+10**-9))
         return loss/len(targets)
 
