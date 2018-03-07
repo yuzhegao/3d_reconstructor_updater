@@ -42,7 +42,7 @@ data_rootpath=args.data
 resume='./model/'+args.resume
 ## args.resume: just the name of checkpoint file
 
-logfile=args.data_name+'_ce_single_train.txt'
+logfile=args.data_name+'_single_train.txt'
 print ('logfile name:{}'.format(logfile))
 
 if is_GPU:
