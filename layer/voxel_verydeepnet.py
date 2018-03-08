@@ -16,12 +16,13 @@ def weights_init(m):
     init.xavier_uniform(m.weight.data)
     #init.xavier_uniform(m.bias.data)
 
-def add_conv_stage(dim_in, dim_out, kernel_size=4, stride=2, padding=1, bias=True, useBN=False):
+def add_conv_stage(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=True, useBN=False):
   if useBN:
     return nn.Sequential(
       nn.Conv2d(dim_in, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
       nn.BatchNorm2d(dim_out),
-      nn.LeakyReLU(0.1)
+      nn.LeakyReLU(0.1),
+      nn.MaxPool2d(2)
     )
   else:
     return nn.Sequential(
