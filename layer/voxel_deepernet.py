@@ -20,6 +20,8 @@ def add_conv_stage(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=Tru
   if useBN:
     return nn.Sequential(
       nn.Conv2d(dim_in, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
+      nn.BatchNorm2d(dim_out),
+      nn.LeakyReLU(0.1),
       nn.Conv2d(dim_out, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
       nn.BatchNorm2d(dim_out),
       nn.LeakyReLU(0.1)
@@ -27,6 +29,7 @@ def add_conv_stage(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=Tru
   else:
     return nn.Sequential(
       nn.Conv2d(dim_in, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
+      nn.ReLU(),
       nn.Conv2d(dim_out, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
       nn.ReLU()
     )
@@ -34,7 +37,6 @@ def add_conv_stage(dim_in, dim_out, kernel_size=3, stride=1, padding=1, bias=Tru
 def upsample(input_fm, output_fm):
   return nn.Sequential(
     nn.ConvTranspose2d(input_fm, output_fm, 2, 2, 0, bias=False),
-    nn.Conv2d(output_fm, output_fm, kernel_size=3, stride=1, padding=1, bias=True),
     nn.ReLU()
   )
 

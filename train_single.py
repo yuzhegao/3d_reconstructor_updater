@@ -52,13 +52,12 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-model=singleNet_verydeep()
-#model=singleNet_deeper()
+model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 
-critenrion=VoxelL1()
-#critenrion=CrossEntropy_loss()
+#critenrion=VoxelL1()
+critenrion=CrossEntropy_loss()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 ## init lr=0.002
@@ -90,7 +89,7 @@ def log(filename,epoch,batch,loss):
 def train():
     model.train()
     model.apply(weights_init)
-    #weights_init(model)
+    weights_init(model)
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs
@@ -121,7 +120,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets)
+            loss = critenrion(outputs, targets,gamma=0.7)
 
             optimizer.zero_grad()
             loss.backward()
