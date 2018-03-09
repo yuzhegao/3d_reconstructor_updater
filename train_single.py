@@ -6,10 +6,12 @@ import torch
 import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
-from layer.voxel_net2 import singleNet
+#from layer.voxel_net2 import singleNet
 from layer.voxel_deepernet import singleNet_deeper,weights_init
-from layer.voxel_verydeepnet import singleNet_verydeep
+#from layer.voxel_verydeepnet import singleNet_verydeep
 from layer.voxel_func import *
+from torch.autograd import Variable
+
 
 is_GPU=torch.cuda.is_available()
 #torch.set_printoptions(threshold=float('Inf'))
@@ -89,7 +91,6 @@ def log(filename,epoch,batch,loss):
 def train():
     model.train()
     model.apply(weights_init)
-    weights_init(model)
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs

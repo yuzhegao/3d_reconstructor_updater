@@ -5,13 +5,16 @@ import argparse
 
 import time
 from data_prepare.bulid_data import *
-from layer.voxel_net2 import MulitUpdateNet
-from layer.voxel_func import *
+#from layer.voxel_net2 import MulitUpdateNet
+from layer.voxel_deepernet import MulitUpdateNet_deeper,weights_init
+from layer.voxel_func import CrossEntropy_loss
+from torch.autograd import Variable
+
 
 is_GPU=torch.cuda.is_available()
 
 parser = argparse.ArgumentParser(description='Multi-view updater CNN Training')
-parser.add_argument('--data', metavar='DIR',default='./dataset/CubeData',
+parser.add_argument('--data', metavar='DIR',default='./dataset/CsgData',
                     help='path to dataset')
 
 parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
@@ -31,7 +34,7 @@ parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
 
 parser.add_argument('--resume', default='latest_model_multi.pth', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: latest_model_multi.pth)')
-parser.add_argument('--single-model', default='./single_model/t_latest_model.pth', type=str, metavar='PATH',
+parser.add_argument('--single-model', default='./single_model/csg_single_train_ce_server_81.pth', type=str, metavar='PATH',
                     help='path to single model (default: ./single_model/t_latest_model.pth)')
 
 
@@ -54,7 +57,7 @@ dataset=multiDataset(data_rootpath,data_name=args.data_name)
 data_loader =torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
                                           shuffle=True, collate_fn=multi_collate)
 
-model=MulitUpdateNet()
+model=MulitUpdateNet_deeper()
 if is_GPU:
     model=model.cuda()
 
@@ -67,7 +70,8 @@ out=model(x1,x2,4,7)
 print out
 """
 
-critenrion=VoxelL1()
+#critenrion=VoxelL1()
+critenrion=CrossEntropy_loss()
 optimizer=torch.optim.Adam([{'params': model.conv1.parameters()},
                             {'params': model.conv2.parameters()},
                             {'params': model.conv3.parameters()},
@@ -104,6 +108,8 @@ def log(epoch,batch,loss):
 
 def train():
     model.train()
+    model.apply(weights_init)
+
     start_epoch = 0
     num_epochs = args.epochs
     if os.path.exists(resume):
@@ -159,7 +165,7 @@ def train():
             #print v12s  ##a list of v12 : [(v11,v12),(v21,v22)......]
             outputs = model(img1s,img2s,v12s,target1s)
 
-            loss = critenrion(outputs, targets)
+            loss = critenrion(outputs, targets,gamma=0.7)
 
             optimizer.zero_grad()
             loss.backward()
