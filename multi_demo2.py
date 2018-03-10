@@ -12,7 +12,8 @@ from utils.utils_rw import *
 
 import numpy as np
 from data_prepare.bulid_data import multiDataset
-from layer.voxel_net2 import MulitUpdateNet
+#from layer.voxel_net2 import MulitUpdateNet
+from  layer.voxel_deepernet import MulitUpdateNet_deeper
 from layer.voxel_func import *
 
 is_GPU=torch.cuda.is_available()
@@ -26,7 +27,7 @@ def IOU(model1,model2):
     return insect*1.0/union
 
 def eval_model(model_name,demo_path):
-    with open('./dataset/CubeData/binvox/'+model_name+'.binvox', 'rb') as f:
+    with open('./dataset/CsgData/binvox/'+model_name+'.binvox', 'rb') as f:
         # m1 = read_as_coord_array(f)
         m1 = read_as_3d_array(f)
 
@@ -41,11 +42,11 @@ def eval_model(model_name,demo_path):
 #np.set_printoptions(threshold='nan')
 #resume='./model/latest_model_multi.pth'
 
-resume='./model/latest_model_multi_2nd.pth'
-singlemodel_path='./single_model/t_latest_model.pth'
+resume='./model/csg_multi_train_ce_server_10.pth'
+singlemodel_path='./single_model/csg_single_train_ce_server_87.pth'
 
 #model=singleNet()
-model=MulitUpdateNet(singlemodel_path)
+model=MulitUpdateNet_deeper(singlemodel_path)
 
 if os.path.exists(resume):
     if is_GPU:
@@ -54,8 +55,8 @@ if os.path.exists(resume):
         model.load_state_dict(torch.load(resume,map_location=lambda storage, loc: storage)['model'])
     print  ('load trained model success')
 
-data_rootpath='./dataset/CubeData'
-dataset=multiDataset(data_rootpath)
+data_rootpath='./dataset/CsgData'
+dataset=multiDataset(data_rootpath,'csg',test=True)
 
 
 def generate_binvox(num1,num2,demo_path='./demo2/'):
@@ -103,7 +104,8 @@ def generate_binvox(num1,num2,demo_path='./demo2/'):
         eval_model(img2_id,demo_path)
 
 parh='./demo2_second/demo7_7/'
-generate_binvox(290,310,demo_path=parh)
-generate_binvox(1260,1280,demo_path=parh)
-generate_binvox(2710,2730,demo_path=parh)
+
+for i in xrange(18):
+    generate_binvox(i*100+95, i*100+99, demo_path=parh)
+
 
