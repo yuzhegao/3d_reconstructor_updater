@@ -133,5 +133,5 @@ def single_demo(start_idx,end_idx):
 
 #single_demo(246,249)
 for i in xrange(18):
-    single_demo(i*40,i*40+5)
+    single_demo(i*40+8,i*40+13)
 

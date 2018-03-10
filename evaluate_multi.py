@@ -6,7 +6,8 @@ import argparse
 
 import time
 from data_prepare.bulid_data import multiDataset,multi_collate
-from layer.voxel_net2 import MulitUpdateNet
+#from layer.voxel_net2 import MulitUpdateNet
+from layer.voxel_deepernet import MulitUpdateNet_deeper
 from layer.voxel_func import *
 from utils.utils_rw import *
 
@@ -61,7 +62,7 @@ resume='./model/'+args.resume
 
 singlemodel_path=args.single_model
 
-model=MulitUpdateNet()
+model=MulitUpdateNet_deeper()
 if is_GPU:
     model.cuda()
 
@@ -100,6 +101,8 @@ def evaluate():
         model.SingleNet.load = model.SingleNet.load_state_dict(checkoint['model'])
         t2 = time.time()
         print ('singleNetwork load resume model from epoch{} use {}s'.format(checkoint['epoch'], t2 - t1))
+    else:
+        print('Warning: no single model to load!!!\n\n')
     if is_GPU:
         model.SingleNet = model.SingleNet.cuda()
 
