@@ -31,6 +31,8 @@ parser.add_argument('-bs',  '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 1)')
 parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
                     metavar='LR', help='initial learning rate')
+parser.add_argument('--gamma', default=0.7, type=float,
+                    metavar='GM,', help='param of cross entropy loss')
 
 parser.add_argument('--resume', default='latest_model_multi.pth', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: latest_model_multi.pth)')
@@ -165,7 +167,7 @@ def train():
             #print v12s  ##a list of v12 : [(v11,v12),(v21,v22)......]
             outputs = model(img1s,img2s,v12s,target1s)
 
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets,gamma=args.gamma)
 
             optimizer.zero_grad()
             loss.backward()

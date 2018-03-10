@@ -62,8 +62,8 @@ dataset=multiDataset(data_rootpath,'csg',test=True)
 def generate_binvox(num1,num2,demo_path='./demo2/'):
     for i in xrange(num1, num2):
         v1 = random.randint(0, 7)
-        v2 = random.randint(0, 7)
-        #v2 = random.randint(8, 12)
+        #v2 = random.randint(0, 7)
+        v2 = random.randint(8, 12)
 
         #v2=v1
         while(v1==v2):
@@ -103,7 +103,7 @@ def generate_binvox(num1,num2,demo_path='./demo2/'):
             write(m1, f1)
         eval_model(img2_id,demo_path)
 
-parh='./demo2_second/demo7_7/'
+parh='./demo2_second/demo7_12/'
 
 for i in xrange(18):
     generate_binvox(i*100+95, i*100+99, demo_path=parh)

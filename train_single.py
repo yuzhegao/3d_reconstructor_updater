@@ -30,6 +30,8 @@ parser.add_argument('-bs',  '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 2)')
 parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
                     metavar='LR', help='initial learning rate')
+parser.add_argument('--gamma', default=0.7, type=float,
+                    metavar='GM,', help='param of cross entropy loss')
 
 parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
                     help='name of dataset (default: csg)')
@@ -121,7 +123,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets,gamma=args.gamma)
 
             optimizer.zero_grad()
             loss.backward()
