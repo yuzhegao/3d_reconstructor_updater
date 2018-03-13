@@ -42,11 +42,11 @@ def eval_model(model_name,demo_path):
 #np.set_printoptions(threshold='nan')
 #resume='./model/latest_model_multi.pth'
 
-resume='./model/csg_multi_train_ce_server_10.pth'
+resume='./model/csg_multi_train_ce_11.pth'
 singlemodel_path='./single_model/csg_single_train_ce_server_87.pth'
 
 #model=singleNet()
-model=MulitUpdateNet_deeper(singlemodel_path)
+model=MulitUpdateNet_deeper()
 
 if os.path.exists(resume):
     if is_GPU:
@@ -60,10 +60,25 @@ dataset=multiDataset(data_rootpath,'csg',test=True)
 
 
 def generate_binvox(num1,num2,demo_path='./demo2/'):
+    if os.path.exists(singlemodel_path):
+        t1 = time.time()
+        if is_GPU:
+            checkoint = torch.load(singlemodel_path)
+        else:
+            checkoint = torch.load(singlemodel_path, map_location=lambda storage, loc: storage)
+        ## notice :here we should map the order of GPU
+        ## when the SingleModel is trained in GPU-1,we should map the model to GPU-0
+
+        model.SingleNet.load = model.SingleNet.load_state_dict(checkoint['model'])
+        t2 = time.time()
+        print ('singleNetwork load resume model from epoch{} use {}s'.format(checkoint['epoch'], t2 - t1))
+    else:
+        print('Warning: no single model to load!!!\n\n')
+
     for i in xrange(num1, num2):
         v1 = random.randint(0, 7)
-        #v2 = random.randint(0, 7)
-        v2 = random.randint(8, 12)
+        v2 = random.randint(0, 7)
+        #v2 = random.randint(8, 12)
 
         #v2=v1
         while(v1==v2):
@@ -103,7 +118,7 @@ def generate_binvox(num1,num2,demo_path='./demo2/'):
             write(m1, f1)
         eval_model(img2_id,demo_path)
 
-parh='./demo2_second/demo7_12/'
+parh='./demo2_second/demo7_7/'
 
 for i in xrange(18):
     generate_binvox(i*100+95, i*100+99, demo_path=parh)
