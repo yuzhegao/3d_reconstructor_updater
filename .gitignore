@@ -107,6 +107,8 @@ ENV/
 /dataset/CubeData/img/*
 /dataset/CsgData/binvox/*
 /dataset/CsgData/img/*
+/dataset/ChairData/binvox/*
+/dataset/ChairData/img/*
 *.binvox
 *.jpg
 
