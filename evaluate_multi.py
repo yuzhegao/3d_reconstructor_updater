@@ -17,8 +17,10 @@ parser.add_argument('--data', metavar='DIR',default='./dataset/CubeData',
 
 parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
-parser.add_argument('--iter', default=3, type=int, metavar='N',
+parser.add_argument('--iter', default=2, type=int, metavar='N',
                     help='number of iter in  once forward')
+parser.add_argument('--is-iter', default=False, type=bool, metavar='N',
+                    help='whether to use model.predict to iterately optimize output')
 
 parser.add_argument('-bs',  '--batch-size', default=1, type=int,
                     metavar='N', help='mini-batch size (default: 16)')
@@ -56,6 +58,11 @@ is_GPU=torch.cuda.is_available()
 
 if is_GPU:
     torch.cuda.set_device(args.gpu)
+
+if args.is_iter:
+    print ('use model.predict to iterate uopdate\n')
+else:
+    print ('just predict without iter\n')
 
 data_rootpath=args.data
 resume='./model/'+args.resume
@@ -121,8 +128,11 @@ def evaluate():
         # print v12s
 
         ## here we find that the output without iterate is better than with iterate
-        #outputs = model.predict(img1s, img2s, v12s,iter=args.iter)
-        outputs = model(img1s, img2s, v12s)
+        if args.is_iter:
+            outputs = model.predict(img1s, img2s, v12s, iter=args.iter)
+        else:
+            outputs = model(img1s, img2s, v12s)
+
         t2 = time.time()
         print ('in batch{}/{} use {}s'.format(batch_idx*args.batch_size,
                                               len(eval_loader.dataset),t2-t1))
