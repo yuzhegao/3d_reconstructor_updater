@@ -68,7 +68,7 @@ class singleNet_verydeep(nn.Module):
     self.conv5   = add_conv_stage(256, 512, useBN=useBN)
     self.conv6   = add_conv_stage(512, 1024, useBN=useBN)
     self.conv7   = add_conv_stage(1024, 2048, useBN=useBN)
-    self.conv8   = add_conv_stage(2048, 2048, useBN=useBN)
+    self.conv8   = add_conv_stage(2048, 4096, useBN=useBN)
 
 
     self.conv7m = add_conv_stage(4096, 2048, useBN=useBN)
@@ -80,7 +80,7 @@ class singleNet_verydeep(nn.Module):
 
     self.max_pool = nn.MaxPool2d(2)
 
-    self.upsample87 = upsample(2048, 2048)
+    self.upsample87 = upsample(4096, 2048)
     self.upsample76 = upsample(2048, 1024)
     self.upsample65 = upsample(1024, 512)
     self.upsample54 = upsample(512, 256)
