@@ -61,22 +61,22 @@ class singleNet_verydeep(nn.Module):
   def __init__(self, useBN=True):
     super(singleNet_verydeep, self).__init__()
 
-    self.conv1   = add_double_conv_stage(1, 32, useBN=useBN)
-    self.conv2   = add_double_conv_stage(32, 64, useBN=useBN)
-    self.conv3   = add_double_conv_stage(64, 128, useBN=useBN)
-    self.conv4   = add_double_conv_stage(128, 256, useBN=useBN)
-    self.conv5   = add_double_conv_stage(256, 512, useBN=useBN)
-    self.conv6   = add_double_conv_stage(512, 1024, useBN=useBN)
+    self.conv1   = add_conv_stage(1, 32, useBN=useBN)
+    self.conv2   = add_conv_stage(32, 64, useBN=useBN)
+    self.conv3   = add_conv_stage(64, 128, useBN=useBN)
+    self.conv4   = add_conv_stage(128, 256, useBN=useBN)
+    self.conv5   = add_conv_stage(256, 512, useBN=useBN)
+    self.conv6   = add_conv_stage(512, 1024, useBN=useBN)
     self.conv7   = add_conv_stage(1024, 2048, useBN=useBN)
     self.conv8   = add_conv_stage(2048, 2048, useBN=useBN)
 
 
     self.conv7m = add_conv_stage(4096, 2048, useBN=useBN)
     self.conv6m = add_conv_stage(2048, 1024, useBN=useBN)
-    self.conv5m = add_double_conv_stage(1024, 512, useBN=useBN)
-    self.conv4m = add_double_conv_stage(512, 256, useBN=useBN)
-    self.conv3m = add_double_conv_stage(256, 128, useBN=useBN)
-    self.conv2m = add_double_conv_stage(128, 64, useBN=useBN)
+    self.conv5m = add_conv_stage(1024, 512, useBN=useBN)
+    self.conv4m = add_conv_stage(512, 256, useBN=useBN)
+    self.conv3m = add_conv_stage(256, 128, useBN=useBN)
+    self.conv2m = add_conv_stage(128, 64, useBN=useBN)
 
     self.max_pool = nn.MaxPool2d(2)
 

@@ -7,8 +7,8 @@ import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 #from layer.voxel_net2 import singleNet
-from layer.voxel_deepernet import singleNet_deeper,weights_init
-#from layer.voxel_verydeepnet import singleNet_verydeep
+#from layer.voxel_deepernet import singleNet_deeper,weights_init
+from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 from layer.voxel_func import *
 from torch.autograd import Variable
 
@@ -56,7 +56,7 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-model=singleNet_deeper()
+model=singleNet_verydeep()
 if is_GPU:
     model.cuda()
 
