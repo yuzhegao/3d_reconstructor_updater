@@ -5,8 +5,9 @@ import os.path
 import time
 import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
-from layer.voxel_net2 import singleNet
-from layer.voxel_deepernet import singleNet_deeper
+#from layer.voxel_net2 import singleNet
+#from layer.voxel_deepernet import singleNet_deeper
+from layer.voxel_verydeepnet import singleNet_verydeep
 from layer.voxel_func import *
 from utils.utils_rw import *
 from utils.utils_trans import inv_transform_list
@@ -58,7 +59,7 @@ Is_Reconstruct=False
 np.set_printoptions(threshold='nan')
 resume='./model/'+args.resume
 
-model=singleNet_deeper()
+model=singleNet_verydeep()
 ##model.eval()  this is the problem!!!
 
 is_GPU=torch.cuda.is_available()

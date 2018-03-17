@@ -7,7 +7,8 @@ import argparse
 import time
 from data_prepare.bulid_data import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
-from layer.voxel_deepernet import singleNet_deeper
+#from layer.voxel_deepernet import singleNet_deeper
+from layer.voxel_verydeepnet import singleNet_verydeep
 from layer.voxel_func import *
 from utils.utils_rw import *
 
@@ -57,7 +58,7 @@ def eval_iou(pred,target):
 
 
 #model=singleNet()
-model=singleNet_deeper()
+model=singleNet_verydeep()
 if is_GPU:
     model.cuda()
 
