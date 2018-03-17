@@ -24,6 +24,8 @@ parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
+parser.add_argument('--log-step', default=50, type=int, metavar='N',
+                    help='number of batch num to write log')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('-bs',  '--batch-size', default=1, type=int,
@@ -131,7 +133,7 @@ def train():
             t2=time.time()
             print ("in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
-            if batch_idx%100==0 and batch_idx!=0:
+            if batch_idx%args.log_step==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
                 log(logfile, epoch, batch_idx, loss.data[0])
         save_checkpoint(epoch,model, optimizer,is_epoch=True)
