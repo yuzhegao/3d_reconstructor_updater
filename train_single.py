@@ -15,6 +15,7 @@ from data_prepare.bulid_data import singleDataset,single_collate
 from layer.unet import single_UNet,weights_init,softmax_loss
 #from layer.voxel_func import *
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 
 is_GPU=torch.cuda.is_available()
@@ -139,6 +140,7 @@ def evaluate():
             imgs = Variable(imgs)
             targets = [Variable(anno, requires_grad=False) for anno in targets]
         outputs=model(imgs)
+        outputs=F.softmax(outputs,dim=1)
 
         occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
 
