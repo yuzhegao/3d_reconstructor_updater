@@ -110,6 +110,7 @@ class single_UNet(nn.Module):
         block2 = self.upsample32(block3)
 
     #output = block2.view(-1, 2, 64, 64, 64)
+    block2 = F.sigmoid(block2)
     return block2
 
 

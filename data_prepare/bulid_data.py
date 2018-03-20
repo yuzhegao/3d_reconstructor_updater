@@ -94,7 +94,7 @@ def single_collate(batch):
     imgs = []
     for sample in batch:
         imgs.append((sample[0])[np.newaxis, :])
-        targets.append(torch.LongTensor( (sample[1].astype(np.float32)) ))
+        targets.append(torch.FloatTensor( (sample[1].astype(np.float32)) ))
 
     return torch.stack(imgs, 0), torch.stack(targets,0)
 
