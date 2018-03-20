@@ -13,7 +13,7 @@ from data_prepare.bulid_data import singleDataset,single_collate
 #from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 
 from layer.unet import single_UNet,weights_init,softmax_loss
-#from layer.voxel_func import *
+from layer.voxel_func import CrossEntropy_loss
 from torch.autograd import Variable
 import torch.nn.functional as F
 
@@ -67,7 +67,8 @@ model=single_UNet()
 if is_GPU:
     model.cuda()
 
-critenrion=softmax_loss()
+#critenrion=softmax_loss()
+critenrion=CrossEntropy_loss()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 current_best_IOU=0
@@ -140,9 +141,10 @@ def evaluate():
             imgs = Variable(imgs)
             targets = [Variable(anno, requires_grad=False) for anno in targets]
         outputs=model(imgs)
-        outputs=F.softmax(outputs,dim=1)
+        #outputs=F.softmax(outputs,dim=1)
 
-        occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        #occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        occupy = (outputs.data > 0.5)
 
 
         for idx,target in enumerate(targets):

@@ -59,7 +59,7 @@ class CrossEntropy_loss(nn.Module):
     def __init__(self):
         super(CrossEntropy_loss,self).__init__()
 
-    def forward(self,outputs,targets,gamma=0.5):
+    def forward(self,outputs,targets,gamma=0.7):
         loss=torch.zeros(1)
         if torch.cuda.is_available():
             loss=Variable(loss.cuda())
