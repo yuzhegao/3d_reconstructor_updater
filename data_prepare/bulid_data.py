@@ -55,7 +55,7 @@ class singleDataset(data.Dataset):
         with open(os.path.join(self.target_path , img_id+'.binvox')) as f:
             m = read_as_3d_array(f)
         target=m.data.transpose(2,1,0)
-        img = cv2.imread(os.path.join(self.img_path , img_id+'.jpg'),0)
+        img = cv2.imread(os.path.join(self.img_path ,'single_'+ img_id+'.png'),0)
         if img is None:
             print (img_id)
 
@@ -63,7 +63,7 @@ class singleDataset(data.Dataset):
 
     def pull_img(self,index):
         img_id = self.idx[index]
-        img = cv2.imread(os.path.join(self.img_path, img_id + '.jpg'), 0)
+        img = cv2.imread(os.path.join(self.img_path, 'single_'+ img_id + '.png'), 0)
         #
         return img_id,img
 
@@ -75,7 +75,7 @@ class singleDataset(data.Dataset):
         return target
 
     def pull_tensor(self,index):
-        torch.Tensor(self.pull_img(index)).unsqueeze_(0)
+        torch.from_numpy(self.pull_img(index)).unsqueeze_(0)
 
 
 def single_collate(batch):
@@ -94,10 +94,14 @@ def single_collate(batch):
     imgs = []
     for sample in batch:
         imgs.append((sample[0])[np.newaxis, :])
-        targets.append(torch.FloatTensor( (sample[1].astype(np.float32)) ))
+        targets.append(torch.LongTensor( (sample[1].astype(np.float32)) ))
 
     return torch.stack(imgs, 0), torch.stack(targets,0)
 
+
+
+
+##############################################################################################
 ## dataset for multi-view CNN training
 class multiDataset(data.Dataset):
     def __init__(self, data_root,data_name,test=False,):
@@ -149,8 +153,8 @@ class multiDataset(data.Dataset):
         target1 = m.data.transpose(2, 1, 0)   ## notice here!
         #target1 = m.data
 
-        img1 = cv2.imread(os.path.join(self.img_path, img1_id + '.jpg'), 0)
-        img2 = cv2.imread(os.path.join(self.img_path, img2_id + '.jpg'), 0)
+        img1 = cv2.imread(os.path.join(self.img_path, 'update_'+ img1_id + '.png'), 0)
+        img2 = cv2.imread(os.path.join(self.img_path, 'update_'+ img2_id + '.png'), 0)
 
 
         return torch.from_numpy(img1).type(torch.FloatTensor), \
@@ -164,7 +168,7 @@ class multiDataset(data.Dataset):
         if index>len(self.idx) or viewpoint>12:
             print ('Warning: the index of model should <max_idx and viewpoint should <12')
         img_id = '{}_{}'.format(index, viewpoint)
-        img = cv2.imread(os.path.join(self.img_path, img_id + '.jpg'), 0)
+        img = cv2.imread(os.path.join(self.img_path, 'update_'+ img_id + '.png'), 0)
         #
         return img_id, img
 
@@ -178,7 +182,7 @@ class multiDataset(data.Dataset):
         return img_id,target
 
     def pull_tensor(self, index,viewpoint):
-        torch.Tensor(self.pull_img(self.idx[index],viewpoint)).unsqueeze_(0)
+        torch.from_numpy(self.pull_img(self.idx[index],viewpoint)).unsqueeze_(0)
 
 def multi_collate(batch):
     """Custom collate fn for dealing with batches of pull_item data
