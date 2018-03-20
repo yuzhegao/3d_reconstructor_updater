@@ -1,6 +1,7 @@
 from __future__ import print_function,division
 import os
 import os.path
+import shutil
 import numpy as np
 import torch
 
@@ -68,21 +69,19 @@ if is_GPU:
 critenrion=softmax_loss()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
+current_best_IOU=0
 
 
-def save_checkpoint(epoch,model,optimizer,is_epoch=False):
+def save_checkpoint(epoch,model,optimizer):
+    global current_best_IOU
     torch.save({
-        'model':model.state_dict(),
-        'optim':optimizer.state_dict(),
-        'epoch':epoch,
-    },'./model/'+args.resume)
-    if is_epoch:
-        torch.save({
-            'model': model.state_dict(),
-            'optim': optimizer.state_dict(),
-            'epoch': epoch,
-        }, './model_epoch/'+args.resume)
-    #        print ("save model of epoch{}".format(epoch))
+        'model': model.state_dict(),
+        'optim': optimizer.state_dict(),
+        'epoch': epoch,
+        'best_IOU': current_best_IOU,
+    }, './model/' + args.resume)
+
+
 
 
 def log(filename,epoch,batch,loss):
@@ -90,7 +89,7 @@ def log(filename,epoch,batch,loss):
     if epoch == 0 and batch == 100:
         f1.write("\nstart training in {}".format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
 
-    f1.write('\nin epoch{} batch{} loss={}'.format(epoch,batch,loss))
+    f1.write('\nin epoch{} batch{} loss={} '.format(epoch,batch,loss))
 
 
 def IOU(model1,model2):
@@ -118,8 +117,9 @@ def evaluate():
 
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
+        best_iou=checkoint['best_IOU']
         #optimizer.load_state_dict(checkoint['optim'])
-        print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
+        print ('load the resume checkpoint,train from epoch{},current best IOU{}'.format(start_epoch,best_iou))
     else:
         print("Warning! no resume checkpoint to load")
 
@@ -157,10 +157,12 @@ def evaluate():
     print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
     with open(logfile,'a') as f:
         f.write('the evaluate average iou:{}\n'.format(IOUs*1.0/(len(eval_loader.dataset))))
+    return IOUs*1.0/(len(eval_loader.dataset))
 
 
 
 def train():
+    global current_best_IOU
     model.train()
     model.apply(weights_init)
 
@@ -171,6 +173,7 @@ def train():
         checkoint = torch.load(resume,map_location={'cuda:0':'cuda:3'})
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
+        current_best_IOU=checkoint['best_IOU']
 
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
     else:
@@ -181,11 +184,9 @@ def train():
         for batch_idx, (imgs, targets) in enumerate(data_loader):
             if is_GPU:
                 imgs = Variable(imgs.cuda())
-                #targets = [Variable(anno.cuda(), requires_grad=False) for anno in targets]
                 targets=Variable(targets.cuda())
             else:
                 imgs = Variable(imgs)
-                #targets = [Variable(anno, requires_grad=False) for anno in targets]
                 targets=Variable(targets)
 
             t1=time.time()
@@ -200,16 +201,22 @@ def train():
             optimizer.step()
             t2=time.time()
             print ("in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1))
-            #evaluate()
+
             if batch_idx%args.log_step==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
                 log(logfile, epoch, batch_idx, loss.data[0])
-        save_checkpoint(epoch,model, optimizer,is_epoch=True)
         end_epochtime = time.time()
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
-        evaluate()
+        if epoch%30==0:
+            current_iou=evaluate()
+            if current_iou>current_best_IOU:
+                current_best_IOU=current_iou
+                if os.path.exists('./model_epoch/'+args.resume):
+                    os.remove('./model_epoch/'+args.resume)
+                shutil.copy(resume,'./model_epoch/'+args.resume)
+
 
 train()
 
