@@ -209,6 +209,7 @@ def train():
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
+        evaluate()
 
 train()
 
