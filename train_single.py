@@ -103,7 +103,6 @@ def eval_iou(pred,target):
                 target.cpu().numpy().astype(np.float32)>0.5
     intersect=np.sum(target[pred])
     union=np.sum(pred) + np.sum(target) - intersect
-    print ("output occupy sum:{}".format(np.sum(pred)))
 
     return intersect,intersect*1.0/union
 
@@ -156,7 +155,7 @@ def evaluate():
     print ('the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset))))
     print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
     with open(logfile,'a') as f:
-        f.write('the evaluate average iou:{}\n'.format(IOUs*1.0/(len(eval_loader.dataset))))
+        f.write('\nthe evaluate average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
     return IOUs*1.0/(len(eval_loader.dataset))
 
 
@@ -209,7 +208,7 @@ def train():
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
-        if epoch%30==0:
+        if epoch%1==0:
             current_iou=evaluate()
             if current_iou>current_best_IOU:
                 current_best_IOU=current_iou
