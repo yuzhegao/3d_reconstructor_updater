@@ -8,8 +8,10 @@ import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 #from layer.voxel_net2 import singleNet
 #from layer.voxel_deepernet import singleNet_deeper,weights_init
-from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
-from layer.voxel_func import *
+#from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+
+from layer.unet import single_UNet,weights_init,softmax_loss
+#from layer.voxel_func import *
 from torch.autograd import Variable
 
 
@@ -17,7 +19,7 @@ is_GPU=torch.cuda.is_available()
 #torch.set_printoptions(threshold=float('Inf'))
 
 parser = argparse.ArgumentParser(description='Single-view reconstruct CNN Training')
-parser.add_argument('--data', metavar='DIR',default='./dataset/CsgData',
+parser.add_argument('--data', metavar='DIR',default='./dataset/A_VaseData',
                     help='path to dataset')
 
 parser.add_argument('--gpu', default=0, type=int, metavar='N',
@@ -28,14 +30,14 @@ parser.add_argument('--log-step', default=50, type=int, metavar='N',
                     help='number of batch num to write log')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-bs',  '--batch-size', default=1, type=int,
+parser.add_argument('-bs',  '--batch-size', default=2, type=int,
                     metavar='N', help='mini-batch size (default: 2)')
 parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--gamma', default=0.7, type=float,
                     metavar='GM,', help='param of cross entropy loss')
 
-parser.add_argument('--data-name', default='csg', type=str, metavar='PATH',
+parser.add_argument('--data-name', default='A_vase', type=str, metavar='PATH',
                     help='name of dataset (default: csg)')
 ## this arg: name of log, data list file(.txt)
 
@@ -58,12 +60,12 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-model=singleNet_verydeep()
+model=single_UNet()
 if is_GPU:
     model.cuda()
 
 #critenrion=VoxelL1()
-critenrion=CrossEntropy_loss()
+critenrion=softmax_loss()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 ## init lr=0.002
@@ -125,7 +127,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=args.gamma)
+            loss = critenrion(outputs, targets)
 
             optimizer.zero_grad()
             loss.backward()
