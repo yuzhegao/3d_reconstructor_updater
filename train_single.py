@@ -1,21 +1,29 @@
 from __future__ import print_function,division
+
 import os
 import os.path
-import shutil
-import numpy as np
-import torch
-
 import time
+import shutil
 import argparse
-from data_prepare.bulid_data import singleDataset,single_collate
-#from layer.voxel_net2 import singleNet
-#from layer.voxel_deepernet import singleNet_deeper,weights_init
-from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+import numpy as np
 
-from layer.unet import single_UNet,weights_init,softmax_loss
-from layer.voxel_func import CrossEntropy_loss
+import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
+
+"""data perpare"""
+#from data_prepare.bulid_data import singleDataset,single_collate
+from data_prepare.build_data_auther import singleDataset
+
+"""cnn network"""
+from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+#from layer.voxel_net2 import singleNet
+#from layer.voxel_deepernet import singleNet_deeper,weights_init
+from layer.unet import single_UNet,weights_init,softmax_loss
+
+"""loss function"""
+from layer.voxel_func import CrossEntropy_loss
+
 
 
 is_GPU=torch.cuda.is_available()
@@ -63,8 +71,8 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-#model=single_UNet()
-model=singleNet_verydeep()
+model=single_UNet()
+#model=singleNet_verydeep()
 if is_GPU:
     model.cuda()
 
