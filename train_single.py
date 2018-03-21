@@ -10,7 +10,7 @@ import argparse
 from data_prepare.bulid_data import singleDataset,single_collate
 #from layer.voxel_net2 import singleNet
 #from layer.voxel_deepernet import singleNet_deeper,weights_init
-#from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 
 from layer.unet import single_UNet,weights_init,softmax_loss
 from layer.voxel_func import CrossEntropy_loss
@@ -63,7 +63,8 @@ if is_GPU:
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
-model=single_UNet()
+#model=single_UNet()
+model=singleNet_verydeep()
 if is_GPU:
     model.cuda()
 
@@ -197,7 +198,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets)
+            loss = critenrion(outputs, targets,gamma=0.7)
 
             optimizer.zero_grad()
             loss.backward()
