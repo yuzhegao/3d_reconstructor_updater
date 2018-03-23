@@ -50,7 +50,7 @@ class single_UNet(nn.Module):
     super(single_UNet, self).__init__()
     self.net_for_train=net_for_training
 
-    self.conv1   = add_conv_stage(1, 64, useBN=False)
+    self.conv1   = add_conv_stage(3, 64, useBN=False)
     self.conv2   = add_conv_stage(64, 128, useBN=useBN)
     self.conv3   = add_conv_stage(128, 256, useBN=useBN)
     self.conv4   = add_conv_stage(256, 512, useBN=useBN)
@@ -110,8 +110,9 @@ class single_UNet(nn.Module):
         block2 = self.upsample32(block3)
 
     #output = block2.view(-1, 2, 64, 64, 64)
-    block2 = F.sigmoid(block2)
-    return block2
+    output=block2
+    output = F.sigmoid(output)
+    return output
 
 
 class softmax_loss(nn.Module):

@@ -12,8 +12,8 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 """data perpare"""
-#from data_prepare.bulid_data import singleDataset,single_collate
-from data_prepare.build_data_auther import singleDataset
+from data_prepare.bulid_data import singleDataset,single_collate
+#from data_prepare.build_data_auther import singleDataset,single_collate
 
 """cnn network"""
 from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
@@ -22,7 +22,7 @@ from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 from layer.unet import single_UNet,weights_init,softmax_loss
 
 """loss function"""
-from layer.voxel_func import CrossEntropy_loss
+from layer.voxel_func import CrossEntropy_loss,VoxelL1
 
 
 
@@ -30,7 +30,7 @@ is_GPU=torch.cuda.is_available()
 #torch.set_printoptions(threshold=float('Inf'))
 
 parser = argparse.ArgumentParser(description='Single-view reconstruct CNN Training')
-parser.add_argument('--data', metavar='DIR',default='./dataset/A_VaseData',
+parser.add_argument('--data', metavar='DIR',default='./dataset/ChairData',
                     help='path to dataset')
 
 parser.add_argument('--gpu', default=0, type=int, metavar='N',
@@ -48,12 +48,12 @@ parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
 parser.add_argument('--gamma', default=0.7, type=float,
                     metavar='GM,', help='param of cross entropy loss')
 
-parser.add_argument('--data-name', default='A_vase', type=str, metavar='PATH',
-                    help='name of dataset (default: csg)')
+parser.add_argument('--data-name', default='chair', type=str, metavar='PATH',
+                    help='name of dataset')
 ## this arg: name of log, data list file(.txt)
 
-parser.add_argument('--resume', default='csg_single_model.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: csg_single_model.pth)')
+parser.add_argument('--resume', default='chair_single_model.pth', type=str, metavar='PATH',
+                    help='path to latest checkpoint')
 
 args=parser.parse_args()
 
@@ -77,7 +77,7 @@ if is_GPU:
     model.cuda()
 
 #critenrion=softmax_loss()
-critenrion=CrossEntropy_loss()
+critenrion=VoxelL1()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 current_best_IOU=0
@@ -195,7 +195,7 @@ def train():
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets)
 
             optimizer.zero_grad()
             loss.backward()

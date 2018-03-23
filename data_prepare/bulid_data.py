@@ -55,7 +55,10 @@ class singleDataset(data.Dataset):
         with open(os.path.join(self.target_path , img_id+'.binvox')) as f:
             m = read_as_3d_array(f)
         target=m.data.transpose(2,1,0)
-        img = cv2.imread(os.path.join(self.img_path , img_id+'.jpg'),0)
+        img = cv2.imread(os.path.join(self.img_path , img_id+'.jpg')) ##[H,W,C] np.array
+        img = np.transpose(img,(2,0,1)) ## [C,H,W]
+        img = img*0.0039215686
+
         if img is None:
             print (img_id)
 
@@ -93,7 +96,7 @@ def single_collate(batch):
     targets = []
     imgs = []
     for sample in batch:
-        imgs.append((sample[0])[np.newaxis, :])
+        imgs.append((sample[0]))
         targets.append(torch.FloatTensor( (sample[1].astype(np.float32)) ))
 
     return torch.stack(imgs, 0), torch.stack(targets,0)
