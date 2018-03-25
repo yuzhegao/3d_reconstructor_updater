@@ -16,9 +16,9 @@ from data_prepare.bulid_data import singleDataset,single_collate
 #from data_prepare.build_data_auther import singleDataset,single_collate
 
 """cnn network"""
-from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+#from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 #from layer.voxel_net2 import singleNet
-#from layer.voxel_deepernet import singleNet_deeper,weights_init
+from layer.voxel_deepernet import singleNet_deeper
 from layer.unet import single_UNet,weights_init,softmax_loss
 
 """loss function"""
@@ -37,13 +37,13 @@ parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('--log-step', default=50, type=int, metavar='N',
+parser.add_argument('--log-step', default=500, type=int, metavar='N',
                     help='number of batch num to write log')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-bs',  '--batch-size', default=2, type=int,
+parser.add_argument('-bs',  '--batch-size', default=4, type=int,
                     metavar='N', help='mini-batch size (default: 2)')
-parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.0005, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--gamma', default=0.7, type=float,
                     metavar='GM,', help='param of cross entropy loss')
@@ -69,15 +69,16 @@ if is_GPU:
     torch.cuda.set_device(args.gpu)
 
 dataset=singleDataset(data_rootpath,data_name=args.data_name)
-data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
+data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
+                                          shuffle=True, collate_fn=single_collate)
 
 model=single_UNet()
-#model=singleNet_verydeep()
+#model=singleNet_deeper()
 if is_GPU:
     model.cuda()
 
-#critenrion=softmax_loss()
-critenrion=VoxelL1()
+critenrion=softmax_loss()
+#critenrion=VoxelL1()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 current_best_IOU=0
@@ -136,10 +137,10 @@ def evaluate(model_test):
             imgs = Variable(imgs)
             targets = [Variable(anno, requires_grad=False) for anno in targets]
         outputs=model_test(imgs)
-        #outputs=F.softmax(outputs,dim=1)
+        outputs=F.softmax(outputs,dim=1)
 
-        #occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
-        occupy = (outputs.data > 0.5)
+        occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        #occupy = (outputs.data > 0.5)
 
 
         for idx,target in enumerate(targets):
@@ -170,7 +171,7 @@ def train():
     num_epochs = args.epochs
 
     if os.path.isfile(resume):
-        checkoint = torch.load(resume,map_location={'cuda:0':'cuda:3'})
+        checkoint = torch.load(resume)
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
        # current_best_IOU=checkoint['best_IOU']
@@ -192,6 +193,7 @@ def train():
 
             t1=time.time()
             outputs = model(imgs)
+
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
@@ -210,13 +212,16 @@ def train():
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
+
         if epoch%1==0:
             current_iou=evaluate(model)
+            """
             if current_iou>current_best_IOU:
                 current_best_IOU=current_iou
                 if os.path.exists('./model_epoch/'+args.resume):
                     os.remove('./model_epoch/'+args.resume)
                 shutil.copy(resume,'./model_epoch/'+args.resume)
+            """
 
 
 train()
