@@ -66,13 +66,13 @@ class singleNet_verydeep(nn.Module):
     self.conv3   = add_conv_stage(64, 128, useBN=useBN)
     self.conv4   = add_conv_stage(128, 256, useBN=useBN)
     self.conv5   = add_conv_stage(256, 512, useBN=useBN)
-    self.conv6   = add_conv_stage(512, 1024, useBN=useBN)
-    self.conv7   = add_conv_stage(1024, 2048, useBN=useBN)
-    self.conv8   = add_conv_stage(2048, 4096, useBN=useBN)
+    self.conv6   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv7   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv8   = add_conv_stage(512, 512, useBN=useBN)
 
 
-    self.conv7m = add_conv_stage(4096, 2048, useBN=useBN)
-    self.conv6m = add_conv_stage(2048, 1024, useBN=useBN)
+    self.conv7m = add_conv_stage(1024, 512, useBN=useBN)
+    self.conv6m = add_conv_stage(1024, 512, useBN=useBN)
     self.conv5m = add_conv_stage(1024, 512, useBN=useBN)
     self.conv4m = add_conv_stage(512, 256, useBN=useBN)
     self.conv3m = add_conv_stage(256, 128, useBN=useBN)
@@ -80,9 +80,9 @@ class singleNet_verydeep(nn.Module):
 
     self.max_pool = nn.MaxPool2d(2)
 
-    self.upsample87 = upsample(4096, 2048)
-    self.upsample76 = upsample(2048, 1024)
-    self.upsample65 = upsample(1024, 512)
+    self.upsample87 = upsample(512, 512)
+    self.upsample76 = upsample(512, 512)
+    self.upsample65 = upsample(512, 512)
     self.upsample54 = upsample(512, 256)
     self.upsample43 = upsample(256, 128)
     self.upsample32 = upsample(128,  64)

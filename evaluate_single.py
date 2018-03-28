@@ -32,7 +32,7 @@ parser.add_argument('--resume', default='latest_model_multi.pth', type=str, meta
                     help='path to latest checkpoint (default: latest_model_multi.pth)')
 args=parser.parse_args()
 
-resume='./model/'+args.resume
+resume=args.resume
 print (resume)
 
 data_rootpath=args.data
@@ -78,7 +78,7 @@ def evaluate():
     else:
         print("no resume checkpoint to load")
 
-    #model.eval()
+    model.eval()
     IOUs=0
     total_correct=0
 

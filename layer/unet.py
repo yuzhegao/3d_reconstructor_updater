@@ -11,7 +11,7 @@ def weights_init(m):
   classname = m.__class__.__name__
   if classname.find('Conv') != -1:
     #print(classname)
-    init.xavier_uniform(m.weight.data)
+    init.normal(m.weight.data,std=0.02)
 
 def add_conv_stage(dim_in, dim_out, kernel_size=4, stride=2, padding=1, bias=True, useBN=False):
   if useBN:
@@ -50,7 +50,7 @@ class single_UNet(nn.Module):
     super(single_UNet, self).__init__()
     self.net_for_train=net_for_training
 
-    self.conv1   = add_conv_stage(1, 64, useBN=False)
+    self.conv1   = add_conv_stage(3, 64, useBN=False)
     self.conv2   = add_conv_stage(64, 128, useBN=useBN)
     self.conv3   = add_conv_stage(128, 256, useBN=useBN)
     self.conv4   = add_conv_stage(256, 512, useBN=useBN)
@@ -60,12 +60,12 @@ class single_UNet(nn.Module):
     self.conv8   = add_conv_stage(512, 512, useBN=useBN)
 
 
-    self.upsample87 = upsample(512, 512,use_dropout=True)
-    self.upsample76 = upsample(1024, 512,use_dropout=True)
-    self.upsample65 = upsample(1024, 512,use_dropout=True)
+    self.upsample87 = upsample(512, 512,use_dropout=False)
+    self.upsample76 = upsample(1024, 512,use_dropout=False)
+    self.upsample65 = upsample(1024, 512,use_dropout=False)
     self.upsample54 = upsample(1024, 512)
     self.upsample43 = upsample(1024, 256)
-    self.upsample32 = upsample(512,  64)
+    self.upsample32 = upsample(512,  128)
 
 
     ## weight initialization
@@ -76,42 +76,28 @@ class single_UNet(nn.Module):
 
 
   def forward(self, x):
-    if self.net_for_train:
-        conv1_out = self.conv1(x)
-        conv2_out = self.conv2(conv1_out)
-        conv3_out = self.conv3(conv2_out)
-        conv4_out = self.conv4(conv3_out)
-        conv5_out = self.conv5(conv4_out)
-        conv6_out = self.conv6(conv5_out)
-        conv7_out = self.conv7(conv6_out)
-        conv8_out = self.conv8(conv7_out)
+    conv1_out = self.conv1(x)
+    conv2_out = self.conv2(conv1_out)
+    conv3_out = self.conv3(conv2_out)
+    conv4_out = self.conv4(conv3_out)
+    conv5_out = self.conv5(conv4_out)
+    conv6_out = self.conv6(conv5_out)
+    conv7_out = self.conv7(conv6_out)
+    conv8_out = self.conv8(conv7_out)
 
-        block7 = torch.cat((self.upsample87(conv8_out), conv7_out), dim=1)
-        block6 = torch.cat((self.upsample76(block7), conv6_out), dim=1)
-        block5 = torch.cat((self.upsample65(block6), conv5_out), dim=1)
-        block4 = torch.cat((self.upsample54(block5), conv4_out), dim=1)
-        block3 = torch.cat((self.upsample43(block4), conv3_out), dim=1)
-        block2 = self.upsample32(block3)
-    else:
-        conv1_out = self.conv1(x)
-        conv2_out = self.conv2(conv1_out)
-        conv3_out = self.conv3(conv2_out)
-        conv4_out = self.conv4(conv3_out)
-        conv5_out = self.conv5(conv4_out)
-        conv6_out = self.conv6(conv5_out)
-        conv7_out = self.conv7(conv6_out)
-        conv8_out = self.conv8(conv7_out)
+    block7 = torch.cat((self.upsample87(conv8_out), conv7_out), dim=1)
+    block6 = torch.cat((self.upsample76(block7), conv6_out), dim=1)
+    block5 = torch.cat((self.upsample65(block6), conv5_out), dim=1)
+    block4 = torch.cat((self.upsample54(block5), conv4_out), dim=1)
+    block3 = torch.cat((self.upsample43(block4), conv3_out), dim=1)
+    block2 = self.upsample32(block3)
+    #print (block2.data.size())
 
-        block7 = torch.cat((self.upsample87(conv8_out), conv7_out), dim=1)
-        block6 = torch.cat((self.upsample76(block7), conv6_out), dim=1)
-        block5 = torch.cat((self.upsample65(block6), conv5_out), dim=1)
-        block4 = torch.cat((self.upsample54(block5), conv4_out), dim=1)
-        block3 = torch.cat((self.upsample43(block4), conv3_out), dim=1)
-        block2 = self.upsample32(block3)
+    output = block2.view(-1, 2, 64, 64, 64)
+    #output=block2
 
-    #output = block2.view(-1, 2, 64, 64, 64)
-    block2 = F.sigmoid(block2)
-    return block2
+    output = F.sigmoid(output)
+    return output
 
 
 class softmax_loss(nn.Module):
@@ -122,10 +108,12 @@ class softmax_loss(nn.Module):
     def forward(self,outputs,targets):
         ## outputs-[N,2,64,64,64]
         ## target-[N,64,64,64] (0-absent 1-occupy)
-        outputs=torch.transpose(outputs,dim0=1,dim1=4)
+
+        outputs=torch.transpose(outputs,4,1)
         outputs=outputs.contiguous().view(-1,2)
         targets=targets.contiguous().view(-1)
-        loss=self.loss_fn(outputs,targets)
+
+        loss=self.loss_fn(outputs,targets)*64*64*64
 
         return loss
 

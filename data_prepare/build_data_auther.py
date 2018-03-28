@@ -4,6 +4,7 @@ import os
 import os.path
 import torch
 import torch.utils.data as data
+import torchvision
 
 import cv2
 
@@ -19,8 +20,9 @@ class AnnotationTransform(object) :
 '''
 ## dataset class for single-view CNN training
 class singleDataset(data.Dataset):
-    def __init__(self,data_root,data_name,test=False):
+    def __init__(self,data_root,data_name,transf=torchvision.transforms.ToTensor(),test=False):
         super(singleDataset, self).__init__()
+        self.transf = transf
 
         self.img_path=os.path.join(data_root,'img')
         self.target_path=os.path.join(data_root,'binvox')
@@ -55,11 +57,12 @@ class singleDataset(data.Dataset):
         with open(os.path.join(self.target_path , img_id+'.binvox')) as f:
             m = read_as_3d_array(f)
         target=m.data.transpose(2,1,0)
-        img = cv2.imread(os.path.join(self.img_path ,'single_'+ img_id+'.png'),0)
+        img = cv2.imread(os.path.join(self.img_path ,'single_'+ img_id+'.png'))
         if img is None:
             print (img_id)
+        img = self.transf(img)
 
-        return torch.from_numpy(img).type(torch.FloatTensor),target
+        return img,target
 
     def pull_img(self,index):
         img_id = self.idx[index]
@@ -93,8 +96,8 @@ def single_collate(batch):
     targets = []
     imgs = []
     for sample in batch:
-        imgs.append((sample[0])[np.newaxis, :])
-        targets.append(torch.FloatTensor( (sample[1].astype(np.float32)) ))
+        imgs.append((sample[0]))
+        targets.append(torch.from_numpy((sample[1].astype(np.float32))).long())
 
     return torch.stack(imgs, 0), torch.stack(targets,0)
 

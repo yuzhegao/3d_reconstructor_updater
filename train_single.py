@@ -196,12 +196,13 @@ def train():
             print ("in batch:{} loss={} use time:{}s".format(batch_idx, loss.data[0],t2-t1))
 
             if batch_idx%args.log_step==0 and batch_idx!=0:
-                save_checkpoint(epoch, model, optimizer)
+                #save_checkpoint(epoch, model, optimizer)
                 log(logfile, epoch, batch_idx, loss.data[0])
         end_epochtime = time.time()
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
+        save_checkpoint(epoch,model,optimizer)
         if epoch%1==0:
             current_iou=evaluate(model)
             if current_iou>current_best_IOU:

@@ -115,9 +115,12 @@ ENV/
 /dataset/A_CsgData/img/*
 /dataset/A_VaseData/binvox/*
 /dataset/A_VaseData/img/*
+/dataset/A_ChairData/img/*
+/dataset/A_ChairData/binvox/*
 
 *.binvox
 *.jpg
+*.png
 
 # file for test
 /z_test/*
