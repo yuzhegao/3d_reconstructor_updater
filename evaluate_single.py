@@ -26,10 +26,10 @@ parser.add_argument('--gpu', default=0, type=int, metavar='N',
                     help='the index  of GPU where program run')
 
 parser.add_argument('-bs',  '--batch-size', default=1, type=int,
-                    metavar='N', help='mini-batch size (default: 1)')
+                    metavar='N', help='mini-batch size ')
 
 parser.add_argument('--resume', default='latest_model_multi.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: latest_model_multi.pth)')
+                    help='path to latest checkpoint ')
 args=parser.parse_args()
 
 resume=args.resume

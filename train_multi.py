@@ -5,8 +5,7 @@ import argparse
 
 import time
 from data_prepare.bulid_data import *
-#from layer.voxel_net2 import MulitUpdateNet
-from layer.voxel_deepernet import MulitUpdateNet_deeper,weights_init
+from layer.voxel_verydeepnet import MulitUpdateNet_verydeep,weights_init
 from layer.voxel_func import CrossEntropy_loss
 from torch.autograd import Variable
 
@@ -59,7 +58,7 @@ dataset=multiDataset(data_rootpath,data_name=args.data_name)
 data_loader =torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
                                           shuffle=True, collate_fn=multi_collate)
 
-model=MulitUpdateNet_deeper()
+model=MulitUpdateNet_verydeep()
 if is_GPU:
     model=model.cuda()
 
@@ -107,6 +106,17 @@ def log(epoch,batch,loss):
         f1.write("\nstart training in {}".format(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))))
     f1.write('\nin epoch{} batch{} loss={}'.format(epoch,batch,loss))
 
+def eval_iou(pred,target):
+    #print pred.size(),target.size()
+    pred,target=pred.cpu().numpy().astype(np.float32)>0.5,\
+                target.cpu().numpy().astype(np.float32)>0.5
+    intersect=np.sum(target[pred])
+    union=np.sum(pred) + np.sum(target) - intersect
+    print ("output occupy sum:{}".format(np.sum(pred)))
+    print ('iou:{}'.format(intersect*1.0/union))
+
+    return intersect,intersect*1.0/union
+
 
 def train():
     model.train()
@@ -143,6 +153,10 @@ def train():
         print ('singleNetwork load resume model from epoch{} use {}s'.format(checkoint['epoch'], t2 - t1))
     else:
         print ('Warning: single model do not exist!')
+        exit()
+
+
+
 
     if is_GPU:
         model.SingleNet=model.SingleNet.cuda()
@@ -151,8 +165,7 @@ def train():
         init_epochtime = time.time()
         for batch_idx, (img1s,img2s,target1s,targets,v12s) in enumerate(data_loader):
         ## when training,just go through updater CNN once,so the output ->img2 ,use target2(img2)
-            #print "targets shape",targets.size() ##(8L, 64L, 64L, 64L)
-            #print 'img1s',img1s.size() ##(8L, 1L, 256L, 256L)
+
             if is_GPU:
                 img1s = Variable(img1s.cuda())
                 img2s = Variable(img2s.cuda())
@@ -163,6 +176,12 @@ def train():
                 targets = Variable(targets)
 
             t1=time.time()
+
+            """
+            if True:
+                pred_v1=model.SingleNet(img1s)
+                eval_iou(pred_v1.data,target1s) ##just test singleNet
+            """
 
             #print v12s  ##a list of v12 : [(v11,v12),(v21,v22)......]
             outputs = model(img1s,img2s,v12s,target1s)
