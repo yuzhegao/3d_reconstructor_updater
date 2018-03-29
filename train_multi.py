@@ -2,6 +2,7 @@ from __future__ import print_function,division
 
 import os.path
 import argparse
+import shutil
 
 import time
 from data_prepare.bulid_data import *
@@ -37,9 +38,11 @@ parser.add_argument('--resume', default='latest_model_multi.pth', type=str, meta
                     help='path to latest checkpoint (default: latest_model_multi.pth)')
 parser.add_argument('--single-model', default='./single_model/csg_single_train_ce_server_81.pth', type=str, metavar='PATH',
                     help='path to single model (default: ./single_model/t_latest_model.pth)')
+parser.add_argument('--log-step', default=50, type=int, metavar='N',
+                    help='number of batch num to write log')
 
 
-
+current_best_IOU=0
 args=parser.parse_args()
 
 data_rootpath=args.data
@@ -78,27 +81,35 @@ optimizer=torch.optim.Adam([{'params': model.conv1.parameters()},
                             {'params': model.conv3.parameters()},
                             {'params': model.conv4.parameters()},
                             {'params': model.conv5.parameters()},
+                            {'params': model.conv6.parameters()},
+                            {'params': model.conv7.parameters()},
+                            {'params': model.conv8.parameters()},
+
+                            {'params': model.conv7m.parameters()},
+                            {'params': model.conv6m.parameters()},
+                            {'params': model.conv5m.parameters()},
                             {'params': model.conv4m.parameters()},
                             {'params': model.conv3m.parameters()},
                             {'params': model.conv2m.parameters()},
+
                             {'params': model.max_pool.parameters()},
+
+                            {'params': model.upsample87.parameters()},
+                            {'params': model.upsample76.parameters()},
+                            {'params': model.upsample65.parameters()},
                             {'params': model.upsample54.parameters()},
                             {'params': model.upsample43.parameters()},
                             {'params': model.upsample32.parameters()},
                             ],lr=args.lr,betas=(0.5,0.999))
 
-def save_checkpoint(epoch,model,optimizer,is_epoch=False):
+def save_checkpoint(epoch,model,optimizer):
+    global current_best_IOU
     torch.save({
-        'model':model.state_dict(),
-        'optim':optimizer.state_dict(),
-        'epoch':epoch,
-    },'./model/'+args.resume)
-    if is_epoch:
-        torch.save({
-            'model': model.state_dict(),
-            'optim': optimizer.state_dict(),
-            'epoch': epoch,
-        }, './model_epoch/'+args.resume)
+        'model': model.state_dict(),
+        'optim': optimizer.state_dict(),
+        'epoch': epoch,
+        'best_IOU': current_best_IOU,
+    }, './model/' + args.resume)
 
 def log(epoch,batch,loss):
     f1=open(logfile,'a')
@@ -118,7 +129,50 @@ def eval_iou(pred,target):
     return intersect,intersect*1.0/union
 
 
+def evaluate(model_test):
+
+    model_test.eval()
+    IOUs=0
+    total_correct=0
+
+    data_eval = singleDataset(data_rootpath,data_name=args.data_name,test=True)
+    eval_loader = torch.utils.data.DataLoader(data_eval,
+                    batch_size=2, shuffle=True, collate_fn=single_collate)
+    print ("dataset size:",len(eval_loader.dataset))
+
+    for batch_idx,(imgs, targets) in enumerate(eval_loader):
+        if is_GPU:
+            imgs = Variable(imgs.cuda())
+            targets = [Variable(anno.cuda(),requires_grad=False) for anno in targets]
+        else:
+            imgs = Variable(imgs)
+            targets = [Variable(anno, requires_grad=False) for anno in targets]
+        outputs=model_test(imgs)
+        #outputs=F.softmax(outputs,dim=1)
+
+        #occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        occupy = (outputs.data > 0.5)
+
+
+        for idx,target in enumerate(targets):
+
+            insect,iou=eval_iou(occupy[idx],target.data)
+            IOUs += iou
+
+            total_correct += insect
+
+
+    #print 'correct num:{}'.format(total_correct)
+    print ('the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset))))
+    print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
+
+    model_test.train()
+    with open(logfile,'a') as f:
+        f.write('\nthe evaluate average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
+    return IOUs*1.0/(len(eval_loader.dataset))
+
 def train():
+    global current_best_IOU
     model.train()
     model.apply(weights_init)
 
@@ -195,10 +249,9 @@ def train():
 
             print ("in batch:{} loss={} time_cost:{} ".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
-            if batch_idx%100==0 and batch_idx!=0:
-                save_checkpoint(epoch, model, optimizer)
+            if batch_idx % args.log_step==0  and batch_idx!=0:
                 log(epoch, batch_idx, loss.data[0])
-        save_checkpoint(epoch,model, optimizer,is_epoch=True)
+
         end_epochtime = time.time()
 
         # do not decay learning rate at the begining
@@ -206,5 +259,13 @@ def train():
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
+        save_checkpoint(epoch, model, optimizer)
+        if epoch % 1 == 0:
+            current_iou = evaluate(model)
+            if current_iou > current_best_IOU:
+                current_best_IOU = current_iou
+                if os.path.exists('./model_epoch/' + args.resume):
+                    os.remove('./model_epoch/' + args.resume)
+                shutil.copy(resume, './model_epoch/' + args.resume)
 
 train()
