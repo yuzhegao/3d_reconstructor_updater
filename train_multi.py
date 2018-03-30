@@ -132,39 +132,41 @@ def eval_iou(pred,target):
 def evaluate(model_test):
 
     model_test.eval()
-    IOUs=0
-    total_correct=0
+    IOUs = 0
+    total_correct = 0
 
-    data_eval = singleDataset(data_rootpath,data_name=args.data_name,test=True)
-    eval_loader = torch.utils.data.DataLoader(data_eval,
-                    batch_size=2, shuffle=True, collate_fn=single_collate)
-    print ("dataset size:",len(eval_loader.dataset))
+    data_eval = multiDataset(data_rootpath, data_name=args.data_name, test=True)
+    eval_loader = torch.utils.data.DataLoader(data_eval, batch_size=args.batch_size,
+                                              shuffle=True, collate_fn=multi_collate)
+    print("dataset size:", len(eval_loader.dataset))
 
-    for batch_idx,(imgs, targets) in enumerate(eval_loader):
+    for batch_idx, (img1s, img2s, _, targets, v12s) in enumerate(eval_loader):
+        ## when predict,the target is target1 (img1)
         if is_GPU:
-            imgs = Variable(imgs.cuda())
-            targets = [Variable(anno.cuda(),requires_grad=False) for anno in targets]
+            img1s = Variable(img1s.cuda(), volatile=True)
+            img2s = Variable(img2s.cuda(), volatile=True)
+            targets = Variable(targets.cuda())
         else:
-            imgs = Variable(imgs)
-            targets = [Variable(anno, requires_grad=False) for anno in targets]
-        outputs=model_test(imgs)
-        #outputs=F.softmax(outputs,dim=1)
+            img1s = Variable(img1s, volatile=True)
+            img2s = Variable(img2s, volatile=True)
+            targets = Variable(targets)
 
-        #occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        outputs = model_test(img1s, img2s, v12s)
         occupy = (outputs.data > 0.5)
 
-
-        for idx,target in enumerate(targets):
-
-            insect,iou=eval_iou(occupy[idx],target.data)
+        for idx, target in enumerate(targets):
+            # correct+=(occupy[idx].eq(target.data)).sum()
+            insect = (target.data[occupy[idx]]).sum()
+            union = target.data.sum() + occupy[idx].sum() - insect
+            iou = insect * 1.0 / union
+            print('iou:', iou)
             IOUs += iou
 
             total_correct += insect
 
-
-    #print 'correct num:{}'.format(total_correct)
-    print ('the average correct rate:{}'.format(total_correct*1.0/(len(eval_loader.dataset))))
-    print ('the average iou:{}'.format(IOUs*1.0/(len(eval_loader.dataset))))
+    # print 'correct num:{}'.format(total_correct)
+    print('the average correct rate:{}'.format(total_correct * 1.0 / (len(eval_loader.dataset))))
+    print('the average iou:{}'.format(IOUs * 1.0 / (len(eval_loader.dataset))))
 
     model_test.train()
     with open(logfile,'a') as f:
@@ -250,6 +252,7 @@ def train():
             print ("in batch:{} loss={} time_cost:{} ".format(batch_idx, loss.data[0],t2-t1))
             #evaluate()
             if batch_idx % args.log_step==0  and batch_idx!=0:
+                save_checkpoint(epoch, model, optimizer)
                 log(epoch, batch_idx, loss.data[0])
 
         end_epochtime = time.time()
