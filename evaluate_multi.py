@@ -7,7 +7,7 @@ import argparse
 import time
 from data_prepare.bulid_data import multiDataset,multi_collate
 #from layer.voxel_net2 import MulitUpdateNet
-from layer.voxel_deepernet import MulitUpdateNet_deeper
+from layer.voxel_verydeepnet import MulitUpdateNet_verydeep
 from layer.voxel_func import *
 from utils.utils_rw import *
 
@@ -69,7 +69,7 @@ resume='./model/'+args.resume
 
 singlemodel_path=args.single_model
 
-model=MulitUpdateNet_deeper()
+model=MulitUpdateNet_verydeep()
 if is_GPU:
     model.cuda()
 
@@ -86,7 +86,7 @@ def evaluate():
     else:
         print("no resume checkpoint to load")
 
-    #model.eval()
+    model.eval()
     IOUs=0
     total_correct=0
 

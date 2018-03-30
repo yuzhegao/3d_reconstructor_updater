@@ -254,6 +254,12 @@ def train():
             if batch_idx % args.log_step==0  and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
                 log(epoch, batch_idx, loss.data[0])
+                current_iou = evaluate(model)
+                if current_iou > current_best_IOU:
+                    current_best_IOU = current_iou
+                    if os.path.exists('./model_epoch/' + args.resume):
+                        os.remove('./model_epoch/' + args.resume)
+                    shutil.copy(resume, './model_epoch/' + args.resume)
 
         end_epochtime = time.time()
 

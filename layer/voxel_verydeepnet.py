@@ -374,26 +374,45 @@ class MulitUpdateNet_verydeep(nn.Module):
 
       preds=self.sparse2dense(preds_trans) ## [N,64,64,64]   ->[N,C,H,W]
 
+      #################################################################################
 
-      conv1_out = self.conv1(x2) ##[N,32,256,256]
-      conv2_out = self.conv2(self.max_pool(conv1_out))  ##[N,64,128,128]
 
-      conv2_out_cat= torch.cat((self.max_pool(conv2_out),preds),1)
+      conv1_out = self.conv1(x2)
+      conv2_out = self.conv2(self.max_pool(conv1_out))
+
+      conv2_out_cat = torch.cat((self.max_pool(conv2_out), preds), 1)
 
       conv3_out = self.conv3(conv2_out_cat)
       conv4_out = self.conv4(self.max_pool(conv3_out))
       conv5_out = self.conv5(self.max_pool(conv4_out))
 
-      conv5m_out = torch.cat((self.upsample54(conv5_out), conv4_out), 1)
+      #####
+      conv6_out = self.conv6(self.max_pool(conv5_out))
+      conv7_out = self.conv7(self.max_pool(conv6_out))
+      conv8_out = self.conv8(self.max_pool(conv7_out))  ##512 2 2
+
+      conv8m_out = torch.cat((self.upsample87(conv8_out), conv7_out), 1)  ## 512 4 4
+      conv7m_out = self.conv7m(conv8m_out)  ## 512 4 4
+
+      conv7m_out_ = torch.cat((self.upsample76(conv7m_out), conv6_out), 1)  ## 512 8 8
+      conv6m_out = self.conv6m(conv7m_out_)
+
+      conv6m_out_ = torch.cat((self.upsample65(conv6m_out), conv5_out), 1)
+      conv5m_out = self.conv5m(conv6m_out_)
+
+      #####
+      conv5m_out = torch.cat((self.upsample54(conv5m_out), conv4_out), 1)
       conv4m_out = self.conv4m(conv5m_out)
 
       conv4m_out_ = torch.cat((self.upsample43(conv4m_out), conv3_out), 1)
-      conv3m_out = self.conv3m(conv4m_out_)
+      conv3m_out = self.conv3m(conv4m_out_)  ##(128,64,64)
 
       conv3m_out_ = torch.cat((self.upsample32(conv3m_out), conv2_out), 1)
       conv2m_out = self.conv2m(conv3m_out_)
 
       preds = F.sigmoid(self.max_pool(conv2m_out))
+
+      ###############################################################################
 
       ## img1 + pred2 ->CNN =pred3
       preds = self.dense2sparse(preds > 0.5)  ## list of (1,num_nonzero,3)
@@ -410,8 +429,11 @@ class MulitUpdateNet_verydeep(nn.Module):
 
       preds = self.sparse2dense(preds_trans)  ## [N,64,64,64]
 
-      conv1_out = self.conv1(x2)  ##[N,32,256,256]
-      conv2_out = self.conv2(self.max_pool(conv1_out))  ##[N,64,128,128]
+
+      ####################################################################################
+
+      conv1_out = self.conv1(x2)
+      conv2_out = self.conv2(self.max_pool(conv1_out))
 
       conv2_out_cat = torch.cat((self.max_pool(conv2_out), preds), 1)
 
@@ -419,11 +441,26 @@ class MulitUpdateNet_verydeep(nn.Module):
       conv4_out = self.conv4(self.max_pool(conv3_out))
       conv5_out = self.conv5(self.max_pool(conv4_out))
 
-      conv5m_out = torch.cat((self.upsample54(conv5_out), conv4_out), 1)
+      #####
+      conv6_out = self.conv6(self.max_pool(conv5_out))
+      conv7_out = self.conv7(self.max_pool(conv6_out))
+      conv8_out = self.conv8(self.max_pool(conv7_out))  ##512 2 2
+
+      conv8m_out = torch.cat((self.upsample87(conv8_out), conv7_out), 1)  ## 512 4 4
+      conv7m_out = self.conv7m(conv8m_out)  ## 512 4 4
+
+      conv7m_out_ = torch.cat((self.upsample76(conv7m_out), conv6_out), 1)  ## 512 8 8
+      conv6m_out = self.conv6m(conv7m_out_)
+
+      conv6m_out_ = torch.cat((self.upsample65(conv6m_out), conv5_out), 1)
+      conv5m_out = self.conv5m(conv6m_out_)
+
+      #####
+      conv5m_out = torch.cat((self.upsample54(conv5m_out), conv4_out), 1)
       conv4m_out = self.conv4m(conv5m_out)
 
       conv4m_out_ = torch.cat((self.upsample43(conv4m_out), conv3_out), 1)
-      conv3m_out = self.conv3m(conv4m_out_)
+      conv3m_out = self.conv3m(conv4m_out_)  ##(128,64,64)
 
       conv3m_out_ = torch.cat((self.upsample32(conv3m_out), conv2_out), 1)
       conv2m_out = self.conv2m(conv3m_out_)

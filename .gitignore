@@ -118,6 +118,7 @@ ENV/
 /dataset/A_ChairData/img/*
 /dataset/A_ChairData/binvox/*
 
+*.zip
 *.binvox
 *.jpg
 *.png
