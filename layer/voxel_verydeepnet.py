@@ -167,7 +167,7 @@ class MulitUpdateNet_verydeep(nn.Module):
 
     self.conv1 = add_conv_stage(1, 32, useBN=useBN)
     self.conv2 = add_conv_stage(32, 64, useBN=useBN)
-    self.conv3 = add_conv_stage(128, 128, useBN=useBN)
+    self.conv3 = add_conv_stage(64, 128, useBN=useBN)
     self.conv4 = add_conv_stage(128, 256, useBN=useBN)
     self.conv5 = add_conv_stage(256, 512, useBN=useBN)
     self.conv6 = add_conv_stage(512, 512, useBN=useBN)
@@ -189,6 +189,8 @@ class MulitUpdateNet_verydeep(nn.Module):
     self.upsample54 = upsample(512, 256)
     self.upsample43 = upsample(256, 128)
     self.upsample32 = upsample(128, 64)
+
+    self.conv_reduce=add_conv_stage(128,64,useBN=useBN)
 
     ## weight initialization
     for m in self.modules():
@@ -317,8 +319,10 @@ class MulitUpdateNet_verydeep(nn.Module):
     conv2_out = self.conv2(self.max_pool(conv1_out))
 
     conv2_out_cat = torch.cat((self.max_pool(conv2_out), preds), 1)
+    conv2_reduce=self.conv_reduce(conv2_out_cat)
 
-    conv3_out = self.conv3(conv2_out_cat)
+
+    conv3_out = self.conv3(conv2_reduce)
     conv4_out = self.conv4(self.max_pool(conv3_out))
     conv5_out = self.conv5(self.max_pool(conv4_out))
 

@@ -92,6 +92,7 @@ optimizer=torch.optim.Adam([{'params': model.conv1.parameters()},
                             {'params': model.conv3m.parameters()},
                             {'params': model.conv2m.parameters()},
 
+                            {'params': model.conv_reduce.parameters()},
                             {'params': model.max_pool.parameters()},
 
                             {'params': model.upsample87.parameters()},
