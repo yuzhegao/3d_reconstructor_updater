@@ -65,7 +65,7 @@ class single_UNet(nn.Module):
     self.upsample65 = upsample(1024, 512,use_dropout=False)
     self.upsample54 = upsample(1024, 512)
     self.upsample43 = upsample(1024, 256)
-    self.upsample32 = upsample(512,  128)
+    self.upsample32 = upsample(512,  64)
 
 
     ## weight initialization
@@ -93,10 +93,10 @@ class single_UNet(nn.Module):
     block2 = self.upsample32(block3)
     #print (block2.data.size())
 
-    output = block2.view(-1, 2, 64, 64, 64)
+    #output = block2.view(-1, 2, 64, 64, 64)
     #output=block2
 
-    output = F.sigmoid(output)
+    output = F.sigmoid(block2)
     return output
 
 

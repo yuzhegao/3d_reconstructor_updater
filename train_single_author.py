@@ -77,7 +77,7 @@ model=single_UNet()
 if is_GPU:
     model.cuda()
 
-critenrion=softmax_loss()
+critenrion=CrossEntropy_loss()
 #critenrion=VoxelL1()
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
@@ -139,8 +139,8 @@ def evaluate(model_test):
         outputs=model_test(imgs)
         outputs=F.softmax(outputs,dim=1)
 
-        occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
-        #occupy = (outputs.data > 0.5)
+        #occupy = (outputs.data[:,1] > 0.5)  ## ByteTensor
+        occupy = (outputs.data > 0.5)
 
 
         for idx,target in enumerate(targets):
@@ -213,7 +213,7 @@ def train():
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
 
-        if epoch%30==0:
+        if epoch%1==0:
             current_iou=evaluate(model)
             """
             if current_iou>current_best_IOU:
