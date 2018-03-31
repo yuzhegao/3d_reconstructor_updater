@@ -97,7 +97,7 @@ def single_collate(batch):
     imgs = []
     for sample in batch:
         imgs.append((sample[0]))
-        targets.append(torch.from_numpy((sample[1].astype(np.float32))).long())
+        targets.append(torch.from_numpy((sample[1].astype(np.float32))).float())
 
     return torch.stack(imgs, 0), torch.stack(targets,0)
 
@@ -107,8 +107,10 @@ def single_collate(batch):
 ##############################################################################################
 ## dataset for multi-view CNN training
 class multiDataset(data.Dataset):
-    def __init__(self, data_root,data_name,test=False,):
+    def __init__(self, data_root,data_name,transf=torchvision.transforms.ToTensor(),test=False,):
         super(multiDataset, self).__init__()
+        self.transf=transf
+
         self.img_path = os.path.join(data_root, 'img')
         self.target_path = os.path.join(data_root, 'binvox')
 
@@ -156,14 +158,14 @@ class multiDataset(data.Dataset):
         target1 = m.data.transpose(2, 1, 0)   ## notice here!
         #target1 = m.data
 
-        img1 = cv2.imread(os.path.join(self.img_path, 'update_'+ img1_id + '.png'), 0)
-        img2 = cv2.imread(os.path.join(self.img_path, 'update_'+ img2_id + '.png'), 0)
+        img1 = cv2.imread(os.path.join(self.img_path, 'update_'+ img1_id + '.png'))
+        img2 = cv2.imread(os.path.join(self.img_path, 'update_'+ img2_id + '.png'))
+
+        img1=self.transf(img1)
+        img2=self.transf(img2)
 
 
-        return torch.from_numpy(img1).type(torch.FloatTensor), \
-               torch.from_numpy(img2).type(torch.FloatTensor), \
-               torch.FloatTensor(target1.astype(np.float32)),\
-               torch.FloatTensor(target2.astype(np.float32)),(int(v1_idx),int(v2_idx))
+        return img1,img2,target1,target2,(int(v1_idx),int(v2_idx))
                #torch.ByteTensor([v1,v2]).view(1,2)
 
 
@@ -205,11 +207,11 @@ def multi_collate(batch):
     img2s = []
     v12s = []
     for sample in batch:
-        img1s.append((sample[0])[np.newaxis, :])
-        img2s.append((sample[1])[np.newaxis, :])
+        img1s.append((sample[0]))
+        img2s.append((sample[1]))
 
-        target1s.append((sample[2]))
-        target2s.append((sample[3]))
+        target1s.append(torch.from_numpy((sample[2].astype(np.float32))).float())
+        target2s.append(torch.from_numpy((sample[3].astype(np.float32))).float())
 
         v12s.append((sample[4]))
     return torch.stack(img1s, 0),torch.stack(img2s, 0),\

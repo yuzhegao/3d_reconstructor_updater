@@ -61,7 +61,7 @@ class singleNet_verydeep(nn.Module):
   def __init__(self, useBN=True):
     super(singleNet_verydeep, self).__init__()
 
-    self.conv1   = add_conv_stage(1, 32, useBN=useBN)
+    self.conv1   = add_conv_stage(3, 32, useBN=useBN)
     self.conv2   = add_conv_stage(32, 64, useBN=useBN)
     self.conv3   = add_conv_stage(64, 128, useBN=useBN)
     self.conv4   = add_conv_stage(128, 256, useBN=useBN)
@@ -165,7 +165,7 @@ class MulitUpdateNet_verydeep(nn.Module):
           self.trans.append(torch.from_numpy(trans).type(torch.FloatTensor))
     #print len(self.inv_trans),len(self.trans)
 
-    self.conv1 = add_conv_stage(1, 32, useBN=useBN)
+    self.conv1 = add_conv_stage(3, 32, useBN=useBN)
     self.conv2 = add_conv_stage(32, 64, useBN=useBN)
     self.conv3 = add_conv_stage(64, 128, useBN=useBN)
     self.conv4 = add_conv_stage(128, 256, useBN=useBN)
