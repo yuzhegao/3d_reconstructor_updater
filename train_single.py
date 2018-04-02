@@ -13,10 +13,10 @@ from data_prepare.build_data_auther import singleDataset,single_collate
 
 #from layer.voxel_net2 import singleNet
 #from layer.voxel_deepernet import singleNet_deeper,weights_init
-from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
+#from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
 
-from layer.unet import single_UNet,weights_init,softmax_loss
-from layer.voxel_func import CrossEntropy_loss
+from layer.unet import single_UNet,weights_init
+#from layer.voxel_func import CrossEntropy_loss
 from torch.autograd import Variable
 import torch.nn.functional as F
 
@@ -67,12 +67,13 @@ dataset=singleDataset(data_rootpath,data_name=args.data_name)
 data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
 
 #model=single_UNet()
-model=singleNet_verydeep()
+model=single_UNet()
 if is_GPU:
     model.cuda()
 
 #critenrion=softmax_loss()
-critenrion=CrossEntropy_loss()
+critenrion=torch.nn.NLLLoss()
+log_prob=torch.nn.LogSoftmax(dim=1)
 
 optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999))
 current_best_IOU=0
@@ -124,6 +125,7 @@ def evaluate(model_test):
     print ("dataset size:",len(eval_loader.dataset))
 
     for batch_idx,(imgs, targets) in enumerate(eval_loader):
+        targets=targets.view(-1,1,4096,64)
         if is_GPU:
             imgs = Variable(imgs.cuda())
             targets = [Variable(anno.cuda(),requires_grad=False) for anno in targets]
@@ -177,7 +179,12 @@ def train():
     print ('training start!\n')
     for epoch in xrange(start_epoch,num_epochs):
         init_epochtime = time.time()
+
+
         for batch_idx, (imgs, targets) in enumerate(data_loader):
+            targets = targets.view(-1, 4096* 64)
+            targets=targets.long()
+
             if is_GPU:
                 imgs = Variable(imgs.cuda())
                 targets=Variable(targets.cuda())
@@ -187,10 +194,11 @@ def train():
 
             t1=time.time()
             outputs = model(imgs)
+            outputs = log_prob(outputs)
             #print (outputs.data.size())
 
             #loss = critenrion(outputs, targets,gamma=0.5)
-            loss = critenrion(outputs, targets,gamma=0.7)
+            loss = critenrion(outputs, targets)
 
             optimizer.zero_grad()
             loss.backward()
@@ -201,25 +209,28 @@ def train():
             if batch_idx%args.log_step==0 and batch_idx!=0:
                 save_checkpoint(epoch, model, optimizer)
                 log(logfile, epoch, batch_idx, loss.data[0])
+                """
                 current_iou=evaluate(model)
                 if current_iou>current_best_IOU:
                     current_best_IOU=current_iou
                     if os.path.exists('./model_epoch/'+args.resume):
                         os.remove('./model_epoch/'+args.resume)
                     shutil.copy(resume,'./model_epoch/'+args.resume)
+                    """
 
         end_epochtime = time.time()
         print ('--------------------------------------------------------')
         print ('in epoch:{} use time:{}'.format(epoch, end_epochtime - init_epochtime))
         print ('--------------------------------------------------------')
         save_checkpoint(epoch,model,optimizer)
+        """
         if epoch%1==0:
             current_iou=evaluate(model)
             if current_iou>current_best_IOU:
                 current_best_IOU=current_iou
                 if os.path.exists('./model_epoch/'+args.resume):
                     os.remove('./model_epoch/'+args.resume)
-                shutil.copy(resume,'./model_epoch/'+args.resume)
+                shutil.copy(resume,'./model_epoch/'+args.resume)"""
 
 
 train()

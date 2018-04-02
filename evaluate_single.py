@@ -5,7 +5,8 @@ import os.path
 import argparse
 
 import time
-from data_prepare.bulid_data import singleDataset,single_collate
+#from data_prepare.bulid_data import singleDataset,single_collate
+from data_prepare.build_data_auther import singleDataset,single_collate
 from layer.voxel_net2 import singleNet
 #from layer.voxel_deepernet import singleNet_deeper
 from layer.voxel_verydeepnet import singleNet_verydeep

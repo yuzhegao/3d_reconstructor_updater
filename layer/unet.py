@@ -65,7 +65,7 @@ class single_UNet(nn.Module):
     self.upsample65 = upsample(1024, 512,use_dropout=False)
     self.upsample54 = upsample(1024, 512)
     self.upsample43 = upsample(1024, 256)
-    self.upsample32 = upsample(512,  64)
+    self.upsample32 = upsample(512,  128)
 
 
     ## weight initialization
@@ -90,30 +90,10 @@ class single_UNet(nn.Module):
     block5 = torch.cat((self.upsample65(block6), conv5_out), dim=1)
     block4 = torch.cat((self.upsample54(block5), conv4_out), dim=1)
     block3 = torch.cat((self.upsample43(block4), conv3_out), dim=1)
-    block2 = self.upsample32(block3)
-    #print (block2.data.size())
+    block2 = self.upsample32(block3)  ## here we get (N,128,64,64)
 
-    #output = block2.view(-1, 2, 64, 64, 64)
-    #output=block2
-
-    output = F.sigmoid(block2)
+    output = block2.view(-1,2,4096*64)
     return output
 
 
-class softmax_loss(nn.Module):
-    def __init__(self):
-        super(softmax_loss,self).__init__()
-        self.loss_fn=nn.CrossEntropyLoss()
-
-    def forward(self,outputs,targets):
-        ## outputs-[N,2,64,64,64]
-        ## target-[N,64,64,64] (0-absent 1-occupy)
-
-        outputs=torch.transpose(outputs,4,1)
-        outputs=outputs.contiguous().view(-1,2)
-        targets=targets.contiguous().view(-1)
-
-        loss=self.loss_fn(outputs,targets)*64*64*64
-
-        return loss
 

@@ -18,7 +18,9 @@ from utils.utils_trans import inv_transform_list
 
 import numpy as np
 import argparse
-from layer.voxel_deepernet import singleNet_deeper,MulitUpdateNet_deeper
+import torchvision
+#from layer.voxel_deepernet import singleNet_deeper,MulitUpdateNet_deeper
+from layer.voxel_verydeepnet import singleNet_verydeep,MulitUpdateNet_verydeep
 from layer.voxel_func import *
 
 parser = argparse.ArgumentParser(description='3d_predict CNN demo')
@@ -63,11 +65,13 @@ def eval_model():
     print ('iou:',IOU(m1.data, m2.data))
 
 def read_img(img_path):
-    img_nptensor = cv2.imread(img_path,0)
+    img_nptensor = cv2.imread(img_path)
     if img_nptensor is None:
         print ('cannot find img {}'.format(img_path))
         exit()
-    img=torch.from_numpy(img_nptensor[np.newaxis, :][np.newaxis, :]).type(torch.FloatTensor)
+    transf=torchvision.transforms.ToTensor()
+
+    img=transf(img_nptensor)
     return img
 
 
@@ -88,7 +92,7 @@ else:
 
 def demo_single(img1_path):
     resume_single = './model/' + args.resume_single
-    model=singleNet_deeper()
+    model=singleNet_verydeep()
 
     if os.path.exists(resume_single):
         model.load_state_dict(torch.load(resume_single, map_location=lambda storage, loc: storage)['model'])
@@ -97,6 +101,7 @@ def demo_single(img1_path):
         print("Warning! no resume file to load\n")
 
     img1_tensor=read_img(img1_path)
+    img1_tensor=torch.unsqueeze(img1_tensor,0)
 
     img = Variable(img1_tensor)
     init = time.time()
@@ -121,7 +126,7 @@ def demo_single(img1_path):
 
 def multi_train(img1_path, img2_path, v1, v2):
     resume='./model/' + args.resume_multi
-    model=MulitUpdateNet_deeper()
+    model=MulitUpdateNet_verydeep()
 
     if os.path.exists(resume):
         model.load_state_dict(torch.load(resume, map_location=lambda storage, loc: storage)['model'])
