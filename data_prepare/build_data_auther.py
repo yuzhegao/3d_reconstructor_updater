@@ -18,6 +18,16 @@ class AnnotationTransform(object) :
         pass
     def __call__(self, ):
 '''
+
+def get_imgname(idx,perfix=None):
+    if perfix is None:
+        imgname=idx + '.jpg'
+    else:
+        imgname=perfix + idx + 'png'
+    return imgname
+
+
+
 ## dataset class for single-view CNN training
 class singleDataset(data.Dataset):
     def __init__(self,data_root,data_name,transf=torchvision.transforms.ToTensor(),test=False):
@@ -57,7 +67,7 @@ class singleDataset(data.Dataset):
         with open(os.path.join(self.target_path , img_id+'.binvox')) as f:
             m = read_as_3d_array(f)
         target=m.data.transpose(2,1,0)
-        img = cv2.imread(os.path.join(self.img_path ,'single_'+ img_id+'.png'))
+        img = cv2.imread(os.path.join(self.img_path ,get_imgname(img_id)))
         if img is None:
             print (img_id)
         img = self.transf(img)
@@ -66,7 +76,7 @@ class singleDataset(data.Dataset):
 
     def pull_img(self,index):
         img_id = self.idx[index]
-        img = cv2.imread(os.path.join(self.img_path, 'single_'+ img_id + '.png'), 0)
+        img = cv2.imread(os.path.join(self.img_path, get_imgname(img_id)), 0)
         #
         return img_id,img
 
@@ -158,8 +168,8 @@ class multiDataset(data.Dataset):
         target1 = m.data.transpose(2, 1, 0)   ## notice here!
         #target1 = m.data
 
-        img1 = cv2.imread(os.path.join(self.img_path, 'update_'+ img1_id + '.png'))
-        img2 = cv2.imread(os.path.join(self.img_path, 'update_'+ img2_id + '.png'))
+        img1 = cv2.imread(os.path.join(self.img_path, get_imgname(img1_id)))
+        img2 = cv2.imread(os.path.join(self.img_path, get_imgname(img2_id)))
 
         img1=self.transf(img1)
         img2=self.transf(img2)
