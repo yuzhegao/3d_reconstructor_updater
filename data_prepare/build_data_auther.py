@@ -23,7 +23,7 @@ def get_imgname(idx,perfix=None):
     if perfix is None:
         imgname=idx + '.jpg'
     else:
-        imgname=perfix + idx + 'png'
+        imgname=perfix + idx + '.png'
     return imgname
 
 
@@ -66,8 +66,9 @@ class singleDataset(data.Dataset):
 
         with open(os.path.join(self.target_path , img_id+'.binvox')) as f:
             m = read_as_3d_array(f)
-        target=m.data.transpose(2,1,0)
-        img = cv2.imread(os.path.join(self.img_path ,get_imgname(img_id)))
+        #target=m.data.transpose(2,1,0)
+        target=m.data
+        img = cv2.imread(os.path.join(self.img_path ,get_imgname(img_id,'single_')))
         if img is None:
             print (img_id)
         img = self.transf(img)
@@ -76,7 +77,11 @@ class singleDataset(data.Dataset):
 
     def pull_img(self,index):
         img_id = self.idx[index]
-        img = cv2.imread(os.path.join(self.img_path, get_imgname(img_id)), 0)
+        img = cv2.imread(os.path.join(self.img_path, get_imgname(img_id,'single_')))
+        if img is None:
+            print (get_imgname(img_id,'single_'))
+            print (self.img_path)
+        img=self.transf(img)
         #
         return img_id,img
 
