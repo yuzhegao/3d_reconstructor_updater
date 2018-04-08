@@ -43,7 +43,7 @@ parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float,
 parser.add_argument('--gamma', default=0.7, type=float,
                     metavar='GM,', help='param of cross entropy loss')
 
-parser.add_argument('--data-name', default='A_vase', type=str, metavar='PATH',
+parser.add_argument('--data-name', default='authorvase', type=str, metavar='PATH',
                     help='name of dataset (default: csg)')
 ## this arg: name of log, data list file(.txt)
 
@@ -161,7 +161,7 @@ def evaluate(model_test):
 def train():
     global current_best_IOU
     model.train()
-    model.apply(weights_init)
+    #model.apply(weights_init)
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs
