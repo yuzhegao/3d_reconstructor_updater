@@ -17,7 +17,7 @@ def add_conv_stage(dim_in, dim_out, kernel_size=4, stride=2, padding=1, bias=Tru
   if useBN:
     return nn.Sequential(
       nn.Conv2d(dim_in, dim_out, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
-      nn.BatchNorm2d(dim_out,affine=False),
+      nn.BatchNorm2d(dim_out),
       nn.LeakyReLU(negative_slope=0.2)
     )
   else:
@@ -30,14 +30,14 @@ def upsample(input_fm, output_fm,use_dropout=False):
     if use_dropout:
         return nn.Sequential(
             nn.ConvTranspose2d(input_fm, output_fm, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(output_fm,affine=False),
+            nn.BatchNorm2d(output_fm),
             nn.Dropout2d(0.5),
             nn.ReLU(),
         )
     else:
         return nn.Sequential(
             nn.ConvTranspose2d(input_fm, output_fm, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(output_fm,affine=False),
+            nn.BatchNorm2d(output_fm),
             nn.ReLU(),
         )
 
@@ -57,7 +57,7 @@ class single_UNet(nn.Module):
     self.conv5   = add_conv_stage(512, 512, useBN=useBN)
     self.conv6   = add_conv_stage(512, 512, useBN=useBN)
     self.conv7   = add_conv_stage(512, 512, useBN=useBN)
-    self.conv8   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv8   = add_conv_stage(512, 512, useBN=False)
 
 
     self.upsample87 = upsample(512, 512,use_dropout=True)
