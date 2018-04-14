@@ -3,12 +3,9 @@ from __future__ import print_function,division
 import os
 import os.path
 import argparse
-
 import time
-#from data_prepare.bulid_data import singleDataset,single_collate
-from data_prepare.build_data_auther import singleDataset,single_collate
-from layer.voxel_net2 import singleNet
-#from layer.voxel_deepernet import singleNet_deeper
+
+from data_prepare.author_data import singleDataset,single_collate
 
 from layer.unet import single_UNet
 from layer.voxel_func import *
@@ -83,7 +80,7 @@ def evaluate():
     IOUs=0
     total_correct=0
 
-    data_eval = singleDataset(data_rootpath,data_name=args.data_name,test=False)
+    data_eval = singleDataset(data_rootpath,test=False)
     eval_loader = torch.utils.data.DataLoader(data_eval,
                     batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
     print ("dataset size:",len(eval_loader.dataset))
