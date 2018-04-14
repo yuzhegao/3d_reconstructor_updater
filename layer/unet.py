@@ -57,7 +57,7 @@ class single_UNet(nn.Module):
     self.conv5   = add_conv_stage(512, 512, useBN=useBN)
     self.conv6   = add_conv_stage(512, 512, useBN=useBN)
     self.conv7   = add_conv_stage(512, 512, useBN=useBN)
-    self.conv8   = add_conv_stage(512, 512, useBN=False)
+    self.conv8   = add_conv_stage(512, 512, useBN=useBN)
 
 
     self.upsample87 = upsample(512, 512,use_dropout=True)

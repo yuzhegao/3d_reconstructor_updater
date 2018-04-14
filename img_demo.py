@@ -20,7 +20,8 @@ import numpy as np
 import argparse
 import torchvision
 #from layer.voxel_deepernet import singleNet_deeper,MulitUpdateNet_deeper
-from layer.voxel_verydeepnet import singleNet_verydeep,MulitUpdateNet_verydeep
+#from layer.voxel_verydeepnet import singleNet_verydeep,MulitUpdateNet_verydeep
+from layer.unet import single_UNet
 from layer.voxel_func import *
 
 parser = argparse.ArgumentParser(description='3d_predict CNN demo')
@@ -34,7 +35,7 @@ parser.add_argument('--v1', default=0, type=int, metavar='N',
 parser.add_argument('--v2', default=None, type=int, metavar='N',
                     help='the viewpoint index  of img2')
 
-parser.add_argument('--gt', default='22_0.binvox', type=str, metavar='N',
+parser.add_argument('--gt', default=None, type=str, metavar='N',
                     help='path to ground truth voxel grid (in multi_demo,the gt of viewpoint 2)')
 
 parser.add_argument('--resume-single', default='csg_single_train_ce_server_87.pth', type=str, metavar='PATH',
@@ -44,6 +45,7 @@ parser.add_argument('--resume-multi', default='csg_multi_train_ce_11.pth', type=
 args=parser.parse_args()
 
 is_multi=False
+prob=torch.nn.Softmax(dim=1)
 
 def IOU(model1,model2):
     insect= np.sum(model1[model2])
@@ -92,7 +94,9 @@ else:
 
 def demo_single(img1_path):
     resume_single = './model/' + args.resume_single
-    model=singleNet_verydeep()
+    model=single_UNet()
+
+    model.eval()
 
     if os.path.exists(resume_single):
         model.load_state_dict(torch.load(resume_single, map_location=lambda storage, loc: storage)['model'])
@@ -105,23 +109,27 @@ def demo_single(img1_path):
 
     img = Variable(img1_tensor)
     init = time.time()
-    up = model(img)
+    outputs = model(img)
     end = time.time()
 
-    result = up.data[0, :, :, :].numpy()
-    # print (result)
-    # print ("each forward use:{}s".format(end - init))
-    result = (result >= 0.5)
+    outputs = prob(outputs)
+
+    _, occupy = torch.max(outputs.data, dim=1)
+    # occupy=(outputs.data[:1]>0.5)
+    # print (occupy)
+    occupy = occupy.view(-1, 64, 64, 64)
+    occupy =  torch.squeeze(occupy,dim=0).numpy()
+
 
     with open('0_0.binvox', 'rb') as f:
         # m1 = read_as_coord_array(f)
         m1 = read_as_orginal_coord(f)
 
-    m1.data = result.transpose(2, 1, 0)
+    m1.data = occupy
     with open('result.binvox', 'wb')as f1:
         write(m1, f1)  ## write the result 64x64x64 data to .binvox file
-    eval_model()
-
+    if args.gt is not None:
+        eval_model()
 
 
 def multi_train(img1_path, img2_path, v1, v2):
