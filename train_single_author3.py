@@ -193,9 +193,6 @@ def train():
                     f9.write('decay learning rate in iter:{}'.format(num_iter))
 
 
-            if num_iter%args.log_step==0 and num_iter!=0:
-                save_checkpoint(epoch, model, optimizer,num_iter)
-                log(logname, epoch, batch_idx, loss.data[0])
             if num_iter%args.test_step==0 and num_iter!=0:
                 evaluate(model)
 
@@ -220,6 +217,9 @@ def train():
             optimizer.step()
             num_iter+=1
             t2=time.time()
+            if num_iter%args.log_step==0 and num_iter!=0:
+                save_checkpoint(epoch, model, optimizer,num_iter)
+                log(logname, epoch, batch_idx, loss.data[0])
             print ("in epoch-{} iter-{} loss={} use time:{}s".format(epoch,num_iter, loss.data[0],t2-t1))
 
 
