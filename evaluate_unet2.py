@@ -80,7 +80,7 @@ def evaluate():
     IOUs=0
     total_correct=0
 
-    data_eval = singleDataset(data_rootpath,test=False)
+    data_eval = singleDataset(data_rootpath,test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval,
                     batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
     print ("dataset size:",len(eval_loader.dataset))
