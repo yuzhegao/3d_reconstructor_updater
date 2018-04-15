@@ -69,7 +69,6 @@ critenrion=torch.nn.NLLLoss()
 log_prob=torch.nn.LogSoftmax(dim=1)
 prob=torch.nn.Softmax(dim=1)
 
-optimizer=torch.optim.Adam(model.parameters(),lr=args.lr,betas=(0.5,0.999),weight_decay=0.0005)
 current_best_IOU=0
 
 
@@ -161,6 +160,8 @@ def train():
     global current_best_IOU
     model.train()
     #model.apply(weights_init)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999), weight_decay=0.0005)
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs
