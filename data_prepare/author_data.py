@@ -19,6 +19,7 @@ class singleDataset(data.Dataset):
         self.data_rootpath=data_root
 
         data_list=os.listdir(data_root)
+        #data_list.sort(key= lambda x:int(x[:-6]))
         num_sample=len(data_list)
         if test:
             self.data_list=data_list[int(0.9*num_sample):]
@@ -71,6 +72,15 @@ class singleDataset(data.Dataset):
 
         return self.data_list[index],img
 
+    def pull_target(self,filename):
+        data = cv2.imread(os.path.join(self.data_rootpath, filename), -1)
+        voxel_data = data[:, 256:, :]
+        voxel = (self.unpack_voxels(voxel_data, 64, 4)).astype(np.bool)
+
+        return voxel
+
+
+
 
 
 def single_collate(batch):
@@ -94,6 +104,15 @@ def single_collate(batch):
     return torch.stack(imgs, 0), torch.stack(targets,0)
 
 
+
+
+"""
+dataset=singleDataset('../dataset/chairs/database_64/')
+print (dataset.data_list)
+for i in xrange(8):
+    dataset2 = singleDataset('../dataset/chairs/database_64/', test=True)
+    print(dataset2.data_list)
+"""
 
 
 

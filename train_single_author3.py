@@ -76,7 +76,7 @@ def save_checkpoint(epoch,model,optimizer,num_iter):
     global current_best_IOU
     torch.save({
         'model': model.state_dict(),
-        'optim': optimizer.state_dict(),
+        'optim': optimizer,
         'epoch': epoch,
         'best_IOU': current_best_IOU,
         'iter':num_iter,
@@ -161,7 +161,7 @@ def train():
     model.train()
     #model.apply(weights_init)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999), weight_decay=0.0005)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs

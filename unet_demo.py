@@ -4,9 +4,10 @@ import os.path
 
 import time
 import argparse
-from data_prepare.build_data_auther import singleDataset,single_collate
-#from layer.voxel_net2 import singleNet
-#from layer.voxel_deepernet import singleNet_deeper
+import mcubes
+from data_prepare.author_data import singleDataset,single_collate
+
+
 from layer.unet import single_UNet
 from layer.voxel_func import *
 from utils.utils_rw import *
@@ -35,6 +36,19 @@ parser.add_argument('--resume', default='latest_model_multi.pth', type=str, meta
 args=parser.parse_args()
 prob=torch.nn.Softmax(dim=1)
 
+def write_isosurface(voxel_data,id):
+    ## voxel data: the 64^3 numpy array,with the really value of (0,1) but not the bool value
+    print (voxel_data.shape)
+
+    vertices, triangles = mcubes.marching_cubes(voxel_data, 0.2)
+    mcubes.export_obj(vertices, triangles, 'demo/'+ id + ".obj")
+    data=voxel_data.reshape(-1,1)
+    """
+    with open('demo/txt/' + id+'.txt','w') as f:
+        for i in xrange(len(data)):
+            f.write(str(data[i]))
+            f.write('\n')"""
+
 
 def IOU(model1,model2):
     insect= np.sum(model1[model2])
@@ -42,18 +56,13 @@ def IOU(model1,model2):
     print ('output occupy voxel:{}'.format(np.sum(model2)))
     return insect*1.0/union
 
-def eval_model(model_name):
-    print(model_name)
-    with open(args.data+'/binvox/'+model_name+'.binvox', 'rb') as f:
-        # m1 = read_as_coord_array(f)
-        m1 = read_as_3d_array(f)
-
+def eval_model(model_name,target_data):
     with open('./demo/'+model_name+'.binvox', 'rb') as f1:
         # m1 = read_as_coord_array(f)
         m2 = read_as_3d_array(f1)
 
     # print m1.data,m2.data
-    print ('iou:',IOU(m1.data, m2.data))
+    print ('iou:',IOU(target_data, m2.data))
 
 Is_Reconstruct=False
 
@@ -79,7 +88,7 @@ else:
     print ("Warning! no resume file to load\n")
 
 data_rootpath=args.data
-dataset=singleDataset(data_rootpath,data_name=args.data_name,test=True)
+dataset=singleDataset(data_rootpath,test=True)
 
 
 def single_demo(start_idx,end_idx):
@@ -87,12 +96,12 @@ def single_demo(start_idx,end_idx):
     ## but in evaluate_single, the iou is low(0.4)
     for i in xrange(start_idx, end_idx):
         img_id, test_img = dataset.pull_img(i)
-        # test_img = np.array(test_img).astype(np.float32)
-        # cv2.imshow('mat',test_img)
-        # cv2.waitK
-        # #print (img_id)
+        target=dataset.pull_target(img_id)
+
+        print(img_id)
 
         test_img = torch.unsqueeze(test_img,dim=0)
+        img_id=img_id[:-4]
 
         # print test_img.shape
         img = Variable(test_img)
@@ -101,6 +110,7 @@ def single_demo(start_idx,end_idx):
         end = time.time()
 
         outputs = prob(outputs)
+        write_isosurface(outputs[0][1].view( 64, 64, 64).data.numpy(),img_id)
 
         _, occupy = torch.max(outputs.data, dim=1)
         occupy = occupy.view( 64, 64, 64)
@@ -113,8 +123,9 @@ def single_demo(start_idx,end_idx):
         m1.data = result
         with open('./demo/' + img_id + '.binvox', 'wb')as f1:
             write(m1, f1)  ## write the result 64x64x64 data to .binvox file
-        eval_model(img_id)
+        eval_model(img_id,target)
 
+        """
         if Is_Reconstruct:
             ## restore 3D model to viewpoint 9
             model_name, view = img_id.split("_")
@@ -129,7 +140,8 @@ def single_demo(start_idx,end_idx):
                     with open('./demo/' + model_name + '_9.binvox', 'wb')as f3:
                         write(m2, f3)
                         print('get result {} model '.format(model_name))
-            eval_model(model_name + '_9')
+            eval_model(model_name + '_9',target)
+            """
 
 
 #single_demo(246,249)
