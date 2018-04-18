@@ -117,6 +117,8 @@ ENV/
 /dataset/A_VaseData/img/*
 /dataset/A_ChairData/img/*
 /dataset/A_ChairData/binvox/*
+/dataset/complete_data/*
+
 
 *.zip
 *.binvox

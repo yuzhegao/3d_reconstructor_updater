@@ -76,7 +76,6 @@ def save_checkpoint(epoch,model,optimizer,num_iter):
     global current_best_IOU
     torch.save({
         'model': model.state_dict(),
-        'optim': optimizer,
         'epoch': epoch,
         'best_IOU': current_best_IOU,
         'iter':num_iter,
@@ -168,10 +167,10 @@ def train():
     num_iter=0
 
     if os.path.isfile(resume):
-        checkoint = torch.load(resume,map_location={'cuda:0':'cuda:3'})
+        checkoint = torch.load(resume)
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
-        optimizer = checkoint['optim']
+        #optimizer = checkoint['optim']
         num_iter= checkoint['iter']
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
     else:
@@ -217,9 +216,10 @@ def train():
             optimizer.step()
             num_iter+=1
             t2=time.time()
-            if num_iter%args.log_step==0 and num_iter!=0:
+            if num_iter%(args.log_step*10)==0 and num_iter!=0:
                 save_checkpoint(epoch, model, optimizer,num_iter)
-                log(logname, epoch, batch_idx, loss.data[0])
+            if num_iter%(args.log_step)==0 and num_iter!=0:
+                log(logname, epoch, num_iter, loss.data[0])
             print ("in epoch-{} iter-{} loss={} use time:{}s".format(epoch,num_iter, loss.data[0],t2-t1))
 
 

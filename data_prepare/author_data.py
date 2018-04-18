@@ -19,13 +19,16 @@ class singleDataset(data.Dataset):
         self.data_rootpath=data_root
 
         data_list=os.listdir(data_root)
-        #data_list.sort(key= lambda x:int(x[:-6]))
+        data_list.sort(key= lambda x:int(x[:-6]))
+        #print (data_list)
         num_sample=len(data_list)
         if test:
             self.data_list=data_list[int(0.9*num_sample):]
+            print (self.data_list[0:9])
             print ('test dataset ,len={}\n'.format(len(self.data_list)))
         else:
             self.data_list=data_list[:int(0.9*num_sample)]
+            print (self.data_list[-8:])
             print('training dataset ,len={}\n'.format(len(self.data_list)))
 
 
