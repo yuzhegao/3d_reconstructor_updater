@@ -2,29 +2,26 @@ from __future__ import print_function,division
 import os
 import os.path
 import shutil
-import numpy as np
-import torch
-
 import time
 import argparse
-from data_prepare.author_data import singleDataset,single_collate
+import numpy as np
 
-
-#from layer.voxel_net2 import singleNet
-#from layer.voxel_deepernet import singleNet_deeper,weights_init
-#from layer.voxel_verydeepnet import singleNet_verydeep,weights_init
-
-from layer.unet import single_UNet,weights_init
+import torch
 from torch.autograd import Variable
 import torch.nn.functional as F
 
+""" dataset """
+from data_prepare.author_data import multiDataset,multi_collate
+
+""" network """
+from layer.unet import multi_UNet,single_UNet
 
 is_GPU=torch.cuda.is_available()
-#torch.set_printoptions(threshold=float('Inf'))
-
 parser = argparse.ArgumentParser(description='Single-view reconstruct CNN Training')
 parser.add_argument('--data', metavar='DIR',default='./dataset/chairs/database_64',
                     help='path to dataset')
+parser.add_argument('--num_model', metavar='N',type=int,default=400,
+                    help='num of model in dataset')
 parser.add_argument('--log', metavar='LOG',default='log.txt',
                     help='filename of log file')
 
@@ -42,28 +39,48 @@ parser.add_argument('-bs',  '--batch-size', default=3, type=int,
                     metavar='N', help='mini-batch size (default: 2)')
 parser.add_argument('--lr', '--learning-rate', default=0.0005, type=float,
                     metavar='LR', help='initial learning rate')
+parser.add_argument('--single-model', default='./single_model/unet4_chair.pth', type=str, metavar='PATH',
+                    help='path to single model ')
 
-
-parser.add_argument('--resume', default='vases_single_unet4.pth', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: csg_single_model.pth)')
+parser.add_argument('--resume', default='unet4_vase.pth', type=str, metavar='PATH',
+                    help='path to latest checkpoint ')
 
 args=parser.parse_args()
 
 
 data_rootpath=args.data
 resume='./model/'+args.resume
-## args.resume: just the name of checkpoint file
 logname=args.log
 
 if is_GPU:
     torch.cuda.set_device(args.gpu)
 
-dataset=singleDataset(data_rootpath)
-data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=single_collate)
+dataset=multiDataset(data_rootpath,num_model=args.num_model)
+data_loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
+                                          shuffle=True, collate_fn=multi_collate)
 
-model=single_UNet()
+model=multi_UNet()
 if is_GPU:
     model.cuda()
+
+
+optimizer = torch.optim.Adam([{'params': model.conv1.parameters()},
+                            {'params': model.conv2.parameters()},
+                            {'params': model.conv3.parameters()},
+                            {'params': model.conv4.parameters()},
+                            {'params': model.conv5.parameters()},
+                            {'params': model.conv6.parameters()},
+                            {'params': model.conv7.parameters()},
+                            {'params': model.conv8.parameters()},
+
+                            {'params': model.upsample87.parameters()},
+                            {'params': model.upsample76.parameters()},
+                            {'params': model.upsample65.parameters()},
+                            {'params': model.upsample54.parameters()},
+                            {'params': model.upsample43.parameters()},
+                            {'params': model.upsample32.parameters()},
+                            ], lr=args.lr, betas=(0.5, 0.999))
+
 
 critenrion=torch.nn.NLLLoss()
 log_prob=torch.nn.LogSoftmax(dim=1)
@@ -80,7 +97,6 @@ def save_checkpoint(epoch,model,num_iter):
         'best_IOU': current_best_IOU,
         'iter':num_iter,
     }, './model/' + args.resume)
-
 
 
 
@@ -112,25 +128,28 @@ def evaluate(model_test):
     IOUs=0
     total_correct=0
 
-    data_eval = singleDataset(data_rootpath,test=True)
+    data_eval = multiDataset(data_rootpath,test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval,
-                    batch_size=2, shuffle=True, collate_fn=single_collate)
+                    batch_size=2, shuffle=True, collate_fn=multi_collate())
     print ("dataset size:",len(eval_loader.dataset))
 
-    for batch_idx,(imgs, targets) in enumerate(eval_loader):
+    for batch_idx, (img1s, img2s, target1s, targets, v12s) in enumerate(data_loader):
+
         if is_GPU:
-            imgs = Variable(imgs.cuda())
-            targets = [Variable(anno.cuda(),requires_grad=False) for anno in targets]
+            img1s = Variable(img1s.cuda())
+            img2s = Variable(img1s.cuda())
+            targets = Variable(targets.cuda())
         else:
-            imgs = Variable(imgs)
-            targets = [Variable(anno, requires_grad=False) for anno in targets]
-        t1=time.time()
-        outputs=model(imgs)
+            img1s = Variable(img1s)
+            img2s = Variable(img2s)
+            targets = Variable(targets)
+
+
+        t1 = time.time()
+        outputs = model(img1s, img2s, v12s)
         outputs=prob(outputs)
 
         _,occupy = torch.max(outputs.data,dim=1)
-        #occupy=(outputs.data[:1]>0.5)
-        #print (occupy)
         occupy = occupy.view(-1,64,64,64)
 
 
@@ -140,6 +159,7 @@ def evaluate(model_test):
             IOUs += iou
 
             total_correct += insect
+
 
         t2=time.time()
         print ('in batch{} cost{}s'.format(batch_idx,t2-t1))
@@ -158,9 +178,6 @@ def evaluate(model_test):
 def train():
     global current_best_IOU
     model.train()
-    #model.apply(weights_init)
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
     start_epoch = args.start_epoch
     num_epochs = args.epochs
@@ -170,43 +187,63 @@ def train():
         checkoint = torch.load(resume)
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
-        #optimizer = checkoint['optim']
         num_iter= checkoint['iter']
         print ('load the resume checkpoint,train from epoch{}'.format(start_epoch))
     else:
         print("no resume checkpoint to load")
-    print ('training start!\n')
+
+    if os.path.exists(args.single_model):
+        t1 = time.time()
+        if is_GPU:
+            checkoint = torch.load(args.single_model)
+        else:
+            checkoint = torch.load(args.single_model, map_location=lambda storage, loc: storage)
+
+        model.single_net.load = model.single_net.load_state_dict(checkoint['model'])
+        t2 = time.time()
+        print ('singleNetwork load resume model from epoch{} use {}s'.format(checkoint['epoch'], t2 - t1))
+    else:
+        print ('Warning: single model do not exist!')
+        exit()
 
 
     for epoch in xrange(start_epoch,num_epochs):
         init_epochtime = time.time()
 
-        for batch_idx, (imgs, targets) in enumerate(data_loader):
+        for batch_idx, (img1s,img2s,target1s,targets,v12s)  in enumerate(data_loader):
             if num_iter > 1000000:
                 exit()
 
-            if num_iter%300000 ==0 and num_iter!=0:
-                for param in optimizer.param_groups:
-                    param['lr'] *= 0.5
-                with open(logname, 'a') as f9:
-                    f9.write('decay learning rate in iter:{}'.format(num_iter))
-
-
-            if num_iter%args.test_step==0 and num_iter!=0:
-                evaluate(model)
+            #if num_iter%args.test_step==0 and num_iter!=0:
+            #    evaluate(model)
 
             targets = targets.view(-1, 4096* 64)
             targets=targets.long()
 
             if is_GPU:
-                imgs = Variable(imgs.cuda())
+                img1s = Variable(img1s.cuda())
+                img2s = Variable(img1s.cuda())
                 targets=Variable(targets.cuda())
             else:
-                imgs = Variable(imgs)
+                img1s = Variable(img1s)
+                img2s = Variable(img2s)
                 targets=Variable(targets)
+            """
+            if True:
+                pred_v1=model.single_net(img1s)
+                outputs = prob(pred_v1)
+                _, occupy = torch.max(outputs.data, dim=1)
+                target1s = target1s.view(-1, 4096 * 64)
+
+                print (occupy.size(),target1s.size())
+                intersect,iou=eval_iou(occupy,target1s) ##just test single_net
+                print (intersect,iou)
+            exit()
+            """
+
 
             t1=time.time()
-            outputs = model(imgs)
+            outputs = model(img1s,img2s,v12s)
             outputs = log_prob(outputs)
 
             loss = critenrion(outputs, targets)
@@ -217,13 +254,10 @@ def train():
             num_iter+=1
             t2=time.time()
             if num_iter%(args.log_step*10)==0 and num_iter!=0:
-                save_checkpoint(epoch, model, num_iter)
+                save_checkpoint(epoch, model,num_iter)
             if num_iter%(args.log_step)==0 and num_iter!=0:
                 log(logname, epoch, num_iter, loss.data[0])
             print ("in epoch-{} iter-{} loss={} use time:{}s".format(epoch,num_iter, loss.data[0],t2-t1))
-
-
-
 
         end_epochtime = time.time()
         print ('--------------------------------------------------------')
@@ -231,10 +265,4 @@ def train():
         print ('--------------------------------------------------------')
         save_checkpoint(epoch,model,num_iter)
 
-
 train()
-
-
-
-
-

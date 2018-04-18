@@ -98,3 +98,65 @@ class single_UNet(nn.Module):
 
 
 
+###########################################################################################
+## multi-view updater network
+class multi_UNet(nn.Module):
+  def __init__(self, useBN=True,net_for_training=True):
+    super(multi_UNet, self).__init__()
+
+    self.single_net=single_UNet()
+    for param in self.single_net.parameters():
+      param.requires_grad = False
+
+    self.conv1   = add_conv_stage(3, 64, useBN=False)
+    self.conv2   = add_conv_stage(64, 128, useBN=useBN)
+    self.conv3   = add_conv_stage(192, 256, useBN=useBN)
+    self.conv4   = add_conv_stage(256, 512, useBN=useBN)
+    self.conv5   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv6   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv7   = add_conv_stage(512, 512, useBN=useBN)
+    self.conv8   = add_conv_stage(512, 512, useBN=useBN)
+
+
+    self.upsample87 = upsample(512, 512,use_dropout=True)
+    self.upsample76 = upsample(1024, 512,use_dropout=True)
+    self.upsample65 = upsample(1024, 512,use_dropout=True)
+    self.upsample54 = upsample(1024, 512)
+    self.upsample43 = upsample(1024, 256)
+    self.upsample32 = upsample(512,  128)
+
+
+    ## weight initialization
+    for m in self.modules():
+      if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+        init.normal(m.weight.data, std=0.02)
+        if m.bias is not None:
+          m.bias.data.zero_()
+
+
+  def forward(self, x1,x2,target1=None):
+    single_pred=self.single_net(x1).view(-1,2,64,64,64)[:,1,:,:,:]
+
+    conv1_out = self.conv1(x2)
+    conv2_out = self.conv2(conv1_out)
+    conv2_out_=torch.cat([conv2_out,single_pred],dim=1)
+
+    conv3_out = self.conv3(conv2_out_)
+    conv4_out = self.conv4(conv3_out)
+    conv5_out = self.conv5(conv4_out)
+    conv6_out = self.conv6(conv5_out)
+    conv7_out = self.conv7(conv6_out)
+    conv8_out = self.conv8(conv7_out)
+
+    block7 = torch.cat((self.upsample87(conv8_out), conv7_out), dim=1)
+    block6 = torch.cat((self.upsample76(block7), conv6_out), dim=1)
+    block5 = torch.cat((self.upsample65(block6), conv5_out), dim=1)
+    block4 = torch.cat((self.upsample54(block5), conv4_out), dim=1)
+    block3 = torch.cat((self.upsample43(block4), conv3_out), dim=1)
+    block2 = self.upsample32(block3)
+
+    output = block2.view(-1,2,4096*64)
+    return output
+
+
+
