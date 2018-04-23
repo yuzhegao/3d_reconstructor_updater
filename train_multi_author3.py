@@ -128,16 +128,16 @@ def evaluate(model_test):
     IOUs=0
     total_correct=0
 
-    data_eval = multiDataset(data_rootpath,test=True)
+    data_eval = multiDataset(data_rootpath,args.num_model,test=True)
     eval_loader = torch.utils.data.DataLoader(data_eval,
-                    batch_size=2, shuffle=True, collate_fn=multi_collate())
+                    batch_size=2, shuffle=True, collate_fn=multi_collate)
     print ("dataset size:",len(eval_loader.dataset))
 
-    for batch_idx, (img1s, img2s, target1s, targets, v12s) in enumerate(data_loader):
+    for batch_idx, (img1s, img2s, target1s, targets, v12s) in enumerate(eval_loader):
 
         if is_GPU:
             img1s = Variable(img1s.cuda())
-            img2s = Variable(img1s.cuda())
+            img2s = Variable(img2s.cuda())
             targets = Variable(targets.cuda())
         else:
             img1s = Variable(img1s)
@@ -146,6 +146,7 @@ def evaluate(model_test):
 
 
         t1 = time.time()
+        print (img1s.data.size())
         outputs = model(img1s, img2s, v12s)
         outputs=prob(outputs)
 
@@ -184,7 +185,7 @@ def train():
     num_iter=0
 
     if os.path.isfile(resume):
-        checkoint = torch.load(resume)
+        checkoint = torch.load(resume,map_location={'cuda:0':'cuda:1'})
         start_epoch = checkoint['epoch']
         model.load = model.load_state_dict(checkoint['model'])
         num_iter= checkoint['iter']
@@ -195,7 +196,7 @@ def train():
     if os.path.exists(args.single_model):
         t1 = time.time()
         if is_GPU:
-            checkoint = torch.load(args.single_model)
+            checkoint = torch.load(args.single_model,map_location={'cuda:0':'cuda:1'})
         else:
             checkoint = torch.load(args.single_model, map_location=lambda storage, loc: storage)
 
@@ -214,15 +215,15 @@ def train():
             if num_iter > 1000000:
                 exit()
 
-            #if num_iter%args.test_step==0 and num_iter!=0:
-            #    evaluate(model)
+            if num_iter%args.test_step==0 and num_iter!=0:
+                evaluate(model)
 
             targets = targets.view(-1, 4096* 64)
             targets=targets.long()
 
             if is_GPU:
                 img1s = Variable(img1s.cuda())
-                img2s = Variable(img1s.cuda())
+                img2s = Variable(img2s.cuda())
                 targets=Variable(targets.cuda())
             else:
                 img1s = Variable(img1s)

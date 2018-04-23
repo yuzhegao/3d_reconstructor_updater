@@ -115,10 +115,10 @@ ENV/
 /dataset/A_CsgData/img/*
 /dataset/A_VaseData/binvox/*
 /dataset/A_VaseData/img/*
+/dataset/A_VaseData/binvox2/*
 /dataset/A_ChairData/img/*
 /dataset/A_ChairData/binvox/*
 /dataset/complete_data/*
-
 
 *.zip
 *.binvox

@@ -61,6 +61,9 @@ class singleDataset(data.Dataset):
         voxel_data = data[:, 256:, :]
 
         voxel = (self.unpack_voxels(voxel_data, 64, 4)).astype(np.bool)
+        pos_coord=dense_to_sparse(voxel)
+        pos_coord=64-pos_coord
+        voxel=sparse_to_dense(pos_coord,64)
         img = self.transf(img_data[:,:,:3])
 
         return img, voxel
@@ -136,12 +139,12 @@ class multiDataset(data.Dataset):
 
         model_list=np.arange(num_model).tolist()
         if test:
-            data_list= model_list[int(0.9 * num_model):]
+            data_list= model_list[int(399 * num_model/400):]
             self.data_list=generate_datalist(data_list)
             print (self.data_list[0:9])
             print ('test dataset ,len={}\n'.format(len(self.data_list)))
         else:
-            data_list= model_list[:int(0.9 * num_model)]
+            data_list= model_list[:int(399 * num_model/400)]
             self.data_list = generate_datalist(data_list)
             print (self.data_list[-8:])
             print('training dataset ,len={}\n'.format(len(self.data_list)))
